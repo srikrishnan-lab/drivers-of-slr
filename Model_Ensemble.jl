@@ -22,7 +22,6 @@ SNEASY = MimiSNEASY.get_model()
 run(SNEASY)
 
 #= notes:
-- issues w remote access workstation
 - how to get BRICK? (issue w private repo?)
 - doing Julia env correctly?
     -- is there a way to keep the julia module loaded?
