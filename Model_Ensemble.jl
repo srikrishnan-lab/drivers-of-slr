@@ -1,30 +1,20 @@
 using Mimi
 using MimiDICE2013
 using MimiSNEASY
-#using MimiBRICK
+using MimiBRICK
 
+# run DICE
 DICE = MimiDICE2013.get_model()
 run(DICE)
 
-tot_emissions = getdataframe(DICE, :emissions=>(:CCA, :E, :EIND))
-#= 
-- CCA is Cumulative indiustrial emissions
-- E is Total CO2 emissions (GtCO2 per year)
-- EIND is Industrial emissions (GtCO2 per year) 
-=#
-print(tot_emissions)
+co2_emissions = getdataframe(DICE, :emissions=>:E) # E is Total CO2 emissions (GtCO2 per year)
+print(co2_emissions) # prints total co2 emissions for all years of DICE
 
-co2_emissions = getdataframe(DICE, :emissions=>:E)[60, :]
-print(co2_emissions) # just prints total co2 emissions from last year (2305)
+# run SNEASY-BRICK
+SNEASY_BRICK = MimiBRICK.create_sneasy_brick()
+run(SNEASY_BRICK)
+#explore(SNEASY_BRICK)
 
-# should probably be SNEASY-BRICK
-SNEASY = MimiSNEASY.get_model()
-run(SNEASY)
-
-#= notes:
-- how to get BRICK? (issue w private repo?)
-- doing Julia env correctly?
-    -- is there a way to keep the julia module loaded?
-- stuck on generating random parameters
-- currently: how to get emissions input to SNEASY-BRICK
-=#
+# update parameters to feed DICE emissions to SNEASY-BRICK
+#update_param!(SNEASY_BRICK, :ccm, :CO2_emissions, ??)
+print(getdataframe(SNEASY_BRICK, :ccm=>:CO2_emissions))
