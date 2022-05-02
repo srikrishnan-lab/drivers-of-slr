@@ -35,13 +35,14 @@ print(interpolated_df)
 
 # interpolate to fill in missing values in interpolated_df
 final_df = Impute.interp(interpolated_df)
+print(final_df)
 final_emissions = final_df[: , 2]
 
 # create SNEASY-BRICK
 SNEASY_BRICK = MimiBRICK.create_sneasy_brick(start_year=2010, end_year=2305)
 
 # update parameters to feed DICE emissions to SNEASY-BRICK
-update_param!(SNEASY_BRICK, :ccm, :CO2_emissions, final_emissions_col)
+update_param!(SNEASY_BRICK, :ccm, :CO2_emissions, final_emissions)
 run(SNEASY_BRICK)
 explore(SNEASY_BRICK)
 
