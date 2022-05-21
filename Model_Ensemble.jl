@@ -11,8 +11,6 @@ using MimiBRICK
 using DataFrames
 using Impute
 
-print(T)
-
 # run DICE
 DICE = MimiDICE2013.get_model()
 run(DICE)
@@ -51,4 +49,5 @@ sea_level_rise = getdataframe(SNEASY_BRICK, :global_sea_level=>:sea_level_rise) 
 # final output dataframe
 output_df = sea_level_rise
 insertcols!(output_df, 2, :co2_emissions => final_emissions)
-CSV.write("/home/fs01/ced227/drivers-of-sea-level-rise/output.csv", output_df,  header = false)
+#CSV.write("/home/fs01/ced227/drivers-of-sea-level-rise/output.csv", output_df,  header = false)
+print(output_df)
