@@ -102,10 +102,10 @@ RCP85 = scenario_def("RCP85")
 function match_params()
 
     # initialize variables
+    co2_emissions = [] # for reference (will not be using this parameter)
     n2o_concentration = []
     aerosol_forcing = []
     other_forcing = []
-    co2_emissions = [] # for reference (will not be using this parameter)
 
     for year in 1:nrow(final_co2_df)
 
@@ -153,7 +153,7 @@ function match_params()
             other_forcing_val = RCP85[year, :rcp_other_forcing]
         end
 
-        push!(CARBON, co2_emission_val)
+        push!(co2_emissions, co2_emission_val)
         push!(n2o_concentration, n2o_concentration_val)
         push!(aerosol_forcing, aerosol_forcing_val)
         push!(other_forcing, other_forcing_val)
@@ -175,7 +175,7 @@ function match_params()
         =#
     end
 
-    return CARBON
+    return co2_emissions
 
 end
 
