@@ -13,21 +13,25 @@ function plot_scenarios(rcp_scenario)
     rcp_concentrations = DataFrame(load(joinpath(@__DIR__, "data", rcp_scenario*"_concentrations.csv"), skiplines_begin=37))
     rcp_forcing        = DataFrame(load(joinpath(@__DIR__, "data", rcp_scenario*"_midyear_radforcings.csv"), skiplines_begin=58))
 
+    # index for years we want to consider
+    year_idx = [1:1:736;] # rows 1-736
+    years = rcp_emissions.YEARS[year_idx] # years 1765-2500
+
     # Calculate CO₂ emissions.
-    rcp_co2_emissions = (rcp_emissions.FossilCO2 .+ rcp_emissions.OtherCO2)[[1:1:736;]]
+    rcp_co2_emissions = (rcp_emissions.FossilCO2 .+ rcp_emissions.OtherCO2)[year_idx] # units in GtC/yr
 
     # Get RCP N₂O concentrations (used for CO₂ radiative forcing calculations).
-    rcp_n2o_concentration = rcp_concentrations.N2O[[1:1:736;]]
+    rcp_n2o_concentration = rcp_concentrations.N2O[year_idx] # units in ppb
 
     # Calculate exogenous radiative forcings.
-    rcp_aerosol_forcing    = (rcp_forcing.TOTAER_DIR_RF .+ rcp_forcing.CLOUD_TOT_RF)[[1:1:736;]]
-    rcp_other_forcing      = (rcp_forcing.TOTAL_INCLVOLCANIC_RF .- rcp_forcing.CO2_RF .- rcp_forcing.TOTAER_DIR_RF .- rcp_forcing.CLOUD_TOT_RF)[[1:1:736;]]
+    rcp_aerosol_forcing = (rcp_forcing.TOTAER_DIR_RF .+ rcp_forcing.CLOUD_TOT_RF)[year_idx] # units in W/m₂
+    rcp_other_forcing   = (rcp_forcing.TOTAL_INCLVOLCANIC_RF .- rcp_forcing.CO2_RF .- rcp_forcing.TOTAER_DIR_RF .- rcp_forcing.CLOUD_TOT_RF)[year_idx] # units in W/m₂
 
-    df = DataFrame(year = [1765:1:2500;],
-                   rcp_co2_emissions = rcp_co2_emissions, 
-                   rcp_n2o_concentration = rcp_n2o_concentration,
-                   rcp_aerosol_forcing = rcp_aerosol_forcing,
-                   rcp_other_forcing = rcp_other_forcing)
+    df = DataFrame(year = years, # years 1765-2500
+                   rcp_co2_emissions = rcp_co2_emissions, # units in GtC/yr
+                   rcp_n2o_concentration = rcp_n2o_concentration, # units in ppb
+                   rcp_aerosol_forcing = rcp_aerosol_forcing, # units in W/m₂
+                   rcp_other_forcing = rcp_other_forcing) # units in W/m₂
 
     return df
 

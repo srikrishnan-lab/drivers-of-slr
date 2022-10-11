@@ -1,11 +1,3 @@
-# activate the environment
-using Pkg
-Pkg.activate(@__DIR__)
-Pkg.instantiate()
-
-# import necessary packages
-using NCDatasets
-
 # create a function that extracts and stores relevant RCP scenario information
 function scenario_def(rcp_scenario)
     # load emissions and forcing data
@@ -37,7 +29,7 @@ function scenario_def(rcp_scenario)
 end
 
 # create a function to match N₂O concentrations, aerosol forcing, and other forcing to closest RCP
-function match_inputs(RCP26, RCP45, RCP60, RCP85)
+function match_inputs(RCP26, RCP45, RCP60, RCP85, final_co2_df)
     years = final_co2_df.Year
 
     # initialize variables
@@ -113,12 +105,12 @@ scatter!(years, match_inputs(), markersize=2, label="Closest RCP")
 
 
 # create a NetCDF file
-function create_netcdf(output_df)
+function create_netcdf(data) # note: data is output_df
     ds = Dataset(joinpath(@__DIR__, "slr_output.nc"), "c") # create file
 
     # add dimensions
-    defDim(ds, "time", length(output_df.time))
-    defDim(ds, "run", length(output_df.time)) # FIX LENGTH FOR RUN
+    defDim(ds, "time", length(data.time))
+    defDim(ds, "run", length(data.time)) # FIX LENGTH FOR RUN
 
     # add global attributes
     ds.attrib["creator"] = "Chloe Darnell"
@@ -148,7 +140,6 @@ function create_netcdf(output_df)
     slr_thermal_expansion.attrib["units"] = "m"
 
     # add data
-    data = output_df
     co2_emissions = data[:, :co2_emissions]
     radiative_forcing = data[:, :radiative_forcing]
     temperature = data[:, :temperature]
