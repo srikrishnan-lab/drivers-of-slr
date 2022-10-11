@@ -1,0 +1,11 @@
+[deps]
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+Impute = "f7bf1975-0170-51b9-8c5f-a992d46b9575"
+Mimi = "e4e893b0-ee5e-52ea-8111-44b3bdec128c"
+MimiBRICK = "91f4afc7-28cd-4627-b11a-a83dc9ff1a58"
+MimiDICE2013 = "98fa84f0-42a6-11e9-254c-d7945e8c710f"
+MimiSNEASY = "3f1801d0-c5f8-11e9-1568-bf13fd643260"
+NCDatasets = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"
