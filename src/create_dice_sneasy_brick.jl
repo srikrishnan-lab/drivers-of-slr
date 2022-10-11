@@ -1,7 +1,7 @@
 # include functions from other script
 include("functions.jl")
 
-# function returns a Mimi model instance with MimiDICE, MimiBRICK, and MimiSNEASY linked together
+# function returns a Mimi model instance with MimiDICE, MimiSNEASY, and MimiBRICK linked together
 function create_dice_sneasy_brick(; start_year::Integer=2010, end_year::Integer=2305)
 
     # get an instance of SNEASY-BRICK and set time dimension
@@ -50,7 +50,7 @@ function create_dice_sneasy_brick(; start_year::Integer=2010, end_year::Integer=
     # match inputs to closest RCP scenario for each year
     n2o_concentration, aerosol_forcing, other_forcing = match_inputs(RCP26, RCP45, RCP60, RCP85, final_co2_df)
 
-    # update parameters to reflect RCP matching
+    # update inputs to reflect RCP matching
     update_param!(m, :rfco2, :N₂O, n2o_concentration)
     update_param!(m, :radiativeforcing, :rf_aerosol, aerosol_forcing)
     update_param!(m, :radiativeforcing, :rf_other, other_forcing)

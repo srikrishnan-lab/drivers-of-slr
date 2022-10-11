@@ -21,6 +21,7 @@ include("create_dice_sneasy_brick.jl")
 
 m = create_dice_sneasy_brick(start_year=2010, end_year=2305)
 run(m)
+explore(m)
 
 # store dataframe with info for each RCP scenario
 let 
