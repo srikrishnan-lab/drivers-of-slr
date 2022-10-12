@@ -7,9 +7,7 @@ function create_dice_sneasy_brick(; start_year::Integer=2010, end_year::Integer=
     # get an instance of SNEASY-BRICK and set time dimension
     m = MimiBRICK.create_sneasy_brick(start_year=start_year, end_year=end_year)
 
-    # -------------------------------------------------------------------------------------------------------------------------------#
     # ------------------------------- Generate emissions from DICE and feed them to SNEASY-BRICK ------------------------------------#
-    # -------------------------------------------------------------------------------------------------------------------------------#
 
     # get and run DICE
     DICE = MimiDICE2013.get_model()
@@ -37,9 +35,7 @@ function create_dice_sneasy_brick(; start_year::Integer=2010, end_year::Integer=
     # update parameters to feed DICE emissions to SNEASY-BRICK
     update_param!(m, :ccm, :CO2_emissions, final_emissions)
 
-    # -------------------------------------------------------------------------------------------------------------------------------#
     # -------------- Match inputs for N₂O concentration, aerosol forcing, and other forcing to closest RCP scenario -----------------#
-    # -------------------------------------------------------------------------------------------------------------------------------#
 
     # store dataframe with info for each RCP scenario
     RCP26 = scenario_def("RCP26")
