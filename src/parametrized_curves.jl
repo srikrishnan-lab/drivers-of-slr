@@ -6,6 +6,7 @@ Pkg.instantiate()
 using Plots
 using Polynomials
 using Distributions
+using Random
 
 # ------------------------------------------- Create baseline curve for a likely emissions trajectory --------------------------------------------- #
 
@@ -20,13 +21,21 @@ emissions = [[2030,41],
             [2250,8]] # units in GtCO₂
 
 # plot and generate best-fit equations
-plot(first.(emissions), last.(emissions), xlabel="Year", ylabel="CO₂ Emissions (GtCO₂)", title="Base Curve", legend=false)
+plot(first.(emissions), last.(emissions), xlabel="Year", ylabel="CO₂ Emissions (GtCO₂)", title="Base Curve", legend=:false)
 growth_eqn = Polynomials.fit(first.(emissions)[1:3], last.(emissions)[1:3], 2) 
 decline_eqn = Polynomials.fit(first.(emissions)[3:8], last.(emissions)[3:8], 2)
 scatter!(growth_eqn, 2030, 2035)
 scatter!(decline_eqn, 2035, 2250)
 
-# ------------------------------------------- Add in extreme RCP Scenarios to ensure they are covered in generated curves --------------------------------------------- #
+# -------------------------------------- Add in historical observations and extreme RCP Scenarios to ensure they are covered in generated curves ---------------------------------------- #
+
+# observed emissions/historical data (Source: https://www.iea.org/reports/global-energy-review-co2-emissions-in-2021-2)
+observed = [2000 24.3;
+            2005 28.6;
+            2010 32.4;
+            2015 34.6;
+            2020 34.2;
+            2021 36.3] # units in GtCO₂
 
 # anthropogenic total CO2 emissions (PgC/yr)
 rcp26 = [2000 8.03;
@@ -62,14 +71,15 @@ rcp85[:,2] = rcp85[:,2] * 3.67
 
 let t = zeros(Int64, 280), gtco2 = zeros(280), gtco2_tpeak = 0 # allocate space for years and emissions (range from years 2021-2300)
 
+    Random.seed!(1346)
+
     # 36.3 GtCO₂ emitted in 2021 (start year)
     t[1] = 2021
     gtco2[1] = 36.3
 
-    # points that we want to include in emissions trajectories
-    p = scatter(first.(emissions), last.(emissions), xlabel="Year", ylabel="CO₂ Emissions (GtCO₂)", title="Emissions Trajectories", label="Baseline Data", legend=:topleft)
-    scatter!(rcp26[:,1], rcp26[:,2], label="RCP 2.6") # RCP 2.6
-    scatter!(rcp85[:,1], rcp85[:,2], label="RCP 8.5") # RCP 8.5
+    # initiate a plot
+    p = scatter(xlabel="Year", ylabel="CO₂ Emissions (GtCO₂)", title="Emissions Trajectories", legend=:topleft,
+                tickfontsize=20, labelfontsize=22, legendfontsize=12, titlefontsize=26, size=(1000,700), margin=5Plots.mm)
 
     for run in 1:100 # loop through runs
 
@@ -79,7 +89,7 @@ let t = zeros(Int64, 280), gtco2 = zeros(280), gtco2_tpeak = 0 # allocate space 
         t_peak = trunc(Int64, rand(Uniform(2030,2200))) # peaking time          (original = 2115), rand(Uniform(2030,2200))
 
         for i in 2:length(t) # loop through years
-
+            
             t[i] = t[i-1] + 1 # fill in current year to the t array
 
             # before peaking time: quadratic increase
@@ -99,11 +109,17 @@ let t = zeros(Int64, 280), gtco2 = zeros(280), gtco2_tpeak = 0 # allocate space 
         end
         
     # add the curve for this run to the plot
-    plot!(t, gtco2, label=false)
+    plot!(t, gtco2, label=:false)
       
     end
 
-    # display the final plot
+    # historical data & points that we want to include in emissions trajectories
+    scatter!(rcp26[:,1], rcp26[:,2], label="RCP 2.6", markersize=5, color=:black, shape=:rect) # RCP 2.6
+    scatter!(rcp85[:,1], rcp85[:,2], label="RCP 8.5", markersize=6, color=:black, shape=:utriangle) # RCP 8.5
+    scatter!(observed[:,1], observed[:,2], label="Historical Data", markersize=7, color=:black, shape=:cross) # observed data
+
+    # display/save the final plot
     display(p)
+    #savefig(p, "/Users/ced227/Desktop/output.png")
 
 end
