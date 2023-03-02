@@ -1,13 +1,16 @@
-# create a function that extracts and stores relevant RCP scenario information
-function scenario_def(rcp_scenario)
+# -------------------------------------------------------------------------------------------------------------------------------------------- #
+
+# create a function that extracts and stores relevant information for each RCP scenario into a dataframe
+function scenario_df(rcp_scenario)
+
     # load emissions and forcing data
-    rcp_emissions      = DataFrame(load(joinpath(@__DIR__, "data", rcp_scenario*"_emissions.csv"), skiplines_begin=36))
-    rcp_concentrations = DataFrame(load(joinpath(@__DIR__, "data", rcp_scenario*"_concentrations.csv"), skiplines_begin=37))
-    rcp_forcing        = DataFrame(load(joinpath(@__DIR__, "data", rcp_scenario*"_midyear_radforcings.csv"), skiplines_begin=58))
+    rcp_emissions      = DataFrame(load(joinpath(@__DIR__, "..", "data", rcp_scenario*"_emissions.csv"), skiplines_begin=36))
+    rcp_concentrations = DataFrame(load(joinpath(@__DIR__, "..", "data", rcp_scenario*"_concentrations.csv"), skiplines_begin=37))
+    rcp_forcing        = DataFrame(load(joinpath(@__DIR__, "..", "data", rcp_scenario*"_midyear_radforcings.csv"), skiplines_begin=58))
 
     # index for years we want to consider
-    year_idx = [246:1:541;] # rows 246-541
-    years = rcp_emissions.YEARS[year_idx] # years 2010-2305
+    year_idx = [1:1:736;] # rows 1-736
+    years = rcp_emissions.YEARS[year_idx] # years 1765-2500 (full span of years in csv files)
 
     # calculate CO₂ emissions
     rcp_co2_emissions = (rcp_emissions.FossilCO2 .+ rcp_emissions.OtherCO2)[year_idx] * 3.67 # multiply by 3.67 to convert GtC/yr to GtCO₂/yr
@@ -19,28 +22,30 @@ function scenario_def(rcp_scenario)
     rcp_aerosol_forcing = (rcp_forcing.TOTAER_DIR_RF .+ rcp_forcing.CLOUD_TOT_RF)[year_idx] # units in W/m₂
     rcp_other_forcing   = (rcp_forcing.TOTAL_INCLVOLCANIC_RF .- rcp_forcing.CO2_RF .- rcp_forcing.TOTAER_DIR_RF .- rcp_forcing.CLOUD_TOT_RF)[year_idx] # units in W/m₂
 
-    df = DataFrame(year = years, # years 2010-2305
+    df = DataFrame(year = years, # years 1765-2500
                    rcp_co2_emissions = rcp_co2_emissions, # units in GtCO₂/yr
                    rcp_n2o_concentration = rcp_n2o_concentration, # units in ppb
                    rcp_aerosol_forcing = rcp_aerosol_forcing, # units in W/m₂
                    rcp_other_forcing = rcp_other_forcing) # units in W/m₂
-    
     return df
 end
 
-# create a function to match N₂O concentrations, aerosol forcing, and other forcing to closest RCP
-function match_inputs(RCP26, RCP45, RCP60, RCP85, final_co2_df)
-    years = final_co2_df.Year
+# -------------------------------------------------------------------------------------------------------------------------------------------- #
+
+# create a function to match N₂O concentrations, aerosol forcing, and other forcing to closest RCP scenario
+function match_inputs(RCP26, RCP45, RCP60, RCP85, emissions_df)
+
+    years = emissions_df.Year
 
     # initialize variables
     n2o_concentration = zeros(length(years))
     aerosol_forcing = zeros(length(years))
     other_forcing = zeros(length(years))
 
-    for year in 1:nrow(final_co2_df)
+    for year in 1:nrow(emissions_df)
 
         # isolate emission info for each scenario
-        dice_val = final_co2_df[year, :Emissions]
+        true_val  = emissions_df[year, :Emissions]
         RCP26_val = RCP26[year, :rcp_co2_emissions]
         RCP45_val = RCP45[year, :rcp_co2_emissions]
         RCP60_val = RCP60[year, :rcp_co2_emissions]
@@ -48,7 +53,7 @@ function match_inputs(RCP26, RCP45, RCP60, RCP85, final_co2_df)
 
         # put four RCP emissions values in an array
         RCP_array = [RCP26_val, RCP45_val, RCP60_val, RCP85_val]
-        loc = findmin(abs.(RCP_array .- dice_val))[2] # find index of minimum distance
+        loc = findmin(abs.(RCP_array .- true_val))[2] # find index of minimum distance
 
         # initialize variables
         n2o_concentration_val = 0
@@ -87,6 +92,7 @@ function match_inputs(RCP26, RCP45, RCP60, RCP85, final_co2_df)
 end
 
 #=
+Below code is for plotting the matched inputs to nearest scenario:
 # create plot with line for CO₂ emissions associated with each RCP scenario
 plot(RCP26.year, RCP26.rcp_co2_emissions, xlabel="Year", ylabel="CO₂ emissions (GtCO₂/year)", label="RCP 2.6")
 plot!(RCP45.year, RCP45.rcp_co2_emissions, label="RCP 4.5")
@@ -103,10 +109,52 @@ scatter!(years, match_inputs(), markersize=2, label="Closest RCP")
 #savefig(joinpath(@__DIR__, "input_plot.pdf"))
 =#
 
+# -------------------------------------------------------------------------------------------------------------------------------------------- #
+
+# create a function that generates one emissions curve given 3 sampled parameters (γ_g, γ_d, t_peak)
+function emissions_curve(; γ_g=0.0065, γ_d=0.0675, t_peak=2115)
+
+    # allocate space for years and emissions (range from years 2010-2300)
+    t = zeros(Int64, 291)
+    gtco2 = zeros(291)
+    gtco2_tpeak = 0    
+
+    # historical emissions data (Source: https://www.iea.org/reports/global-energy-review-co2-emissions-in-2021-2)
+    historical_years = [2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
+    historical_emissions = [32.4, 33.5, 33.9, 34.5, 34.7, 34.6, 34.6, 35.2, 36.1, 36.1, 34.2, 36.3] # units of GtCO₂
+
+    # add historical emisisons to arrays
+    t[1:12] = historical_years
+    gtco2[1:12] = historical_emissions
+
+    for i = 13:length(t) # loop through years
+
+        t[i] = t[i-1] + 1 # fill in current year to the t array
+
+        # before peaking time: quadratic increase
+        if t[i] <= t_peak
+            gtco2[i] = gtco2[i-1] + γ_g * (t_peak - t[i]) # calculate emissions for current year
+            
+            # at peaking time: save value
+            if t[i] == t_peak
+                gtco2_tpeak = gtco2[i-1] + γ_g * (t_peak - t[i]) # save value of emissions at t_peak for scaling in logistic function
+            end
+
+        # after peaking time: logistic decrease
+        elseif t[i] > t_peak
+            gtco2[i] = gtco2[i-1] - ((2 * gtco2_tpeak * γ_d * exp(γ_d * (t[i] - t_peak))) / (exp(γ_d * (t[i] - t_peak)) + 1)^2) # calculate emissions for current year
+        end
+    end
+
+    return t, gtco2 # return years and emissions
+
+end
+
+# -------------------------------------------------------------------------------------------------------------------------------------------- #
 
 # create a NetCDF file
 function create_netcdf(data) # note: data is output_df
-    ds = Dataset(joinpath(@__DIR__, "slr_output.nc"), "c") # create file
+    ds = Dataset(joinpath(@__DIR__, "../results/slr_output.nc"), "c") # create file
 
     # add dimensions
     defDim(ds, "time", length(data.time))
