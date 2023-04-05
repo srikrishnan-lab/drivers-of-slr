@@ -70,7 +70,7 @@ plot!(years, collect(gmslr[i,:]), label="GMSLR", color=:black, linewidth=4, line
 all_plots1 = plot(p1, p2, p3, p4, layout=4, plot_title="Run $i Results - $output_dir")
 plot!(size=(1000,800), labelfontsize=10, margin=5Plots.mm)
 display(all_plots1)
-savefig(all_plots1, "/Users/ced227/Desktop/plots/run$i-$output_dir.png")
+#savefig(all_plots1, "/Users/ced227/Desktop/plots/run$i-$output_dir.png")
 
 # -------------------------------------------------------------------------------------------------------- #
 # ---- Plot 2: Representative Low, Medium, & High Emissions Trajectories with SLR Range Visualization ---- #
@@ -136,7 +136,7 @@ plot!(plt2, years, slr_quantiles_low[1,:], fillrange=slr_quantiles_low[2,:], fil
 # combine plots and display
 all_plots2 = plot(plt1, plt2, layout=(1,2), size=(1100,400), margin=5Plots.mm)
 display(all_plots2)
-savefig(all_plots2, "/Users/ced227/Desktop/plots/low_med_high_co2_slr.png")
+#savefig(all_plots2, "/Users/ced227/Desktop/plots/low_med_high_co2_slr.png")
 
 # -------------------------------------------------------------------------------------------------------- #
 # --------------- Plot 3: Output Visualization Low, Medium, High Emissions Comparison -------------------- #
@@ -158,7 +158,7 @@ plot!(years, collect(rf_low[1,:]), label="Low Emissions", color=:green, linewidt
 all_plots3 = plot(f1, f2, layout=(1,2))
 plot!(size=(1100,400), margin=5Plots.mm)
 display(all_plots3)
-savefig(all_plots3, "/Users/ced227/Desktop/plots/low_med_high_temp_rf.png")
+#savefig(all_plots3, "/Users/ced227/Desktop/plots/low_med_high_temp_rf.png")
 
 # -------------------------------------------------------------------------------------------------------- #
 # -------------- Plot 4: GMSLR Contributors for Low, Medium, High Emissions Comparison ------------------- #
@@ -204,7 +204,7 @@ plot!(years, collect(gmslr_high[1,:]), label="GMSLR", color=:black, linewidth=4,
 all_plots4 = plot(fig1, fig2, fig3, layout=(1,3))
 plot!(size=(1600,500), margin=10Plots.mm)
 display(all_plots4)
-savefig(all_plots4, "/Users/ced227/Desktop/plots/low_med_high_slr_contributions.png")
+#savefig(all_plots4, "/Users/ced227/Desktop/plots/low_med_high_slr_contributions.png")
 
 # -------------------------------------------------------------------------------------------------------- #
 # --------------------- Supplementary: Can be useful for benchmarking ------------------------------------ #
