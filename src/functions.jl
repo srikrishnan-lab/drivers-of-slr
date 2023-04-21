@@ -1,3 +1,86 @@
+using CSVFiles
+using XLSX
+using Distributions
+
+# -------------------------------------------------------------------------------------------------------------------------------------------- #
+
+#= create a function that simulates a stationary AR(1) process to superimpose noise onto the climate model projections
+
+Function Arguments:
+    num_years = number of time periods (years) the model is being run for
+    σ         = calibrated standard deviation
+    ρ         = calibrated autocorrelation coefficient
+=#
+function simulate_ar1_noise(num_years, σ, ρ)
+    y = zeros(num_years)
+    y[1] = rand(Normal(0, σ/sqrt(1-ρ^2)))
+    ϵ = rand(Normal(0,σ), num_years) # time-varying observation errors
+    for t in 2:num_years
+        y[t] = ρ * y[t-1] + ϵ[t]
+    end
+    return y
+end
+
+# -------------------------------------------------------------------------------------------------------------------------------------------- #
+
+# create a function that returns a dataframe of historical emissions (1850-2021)
+function historical_emissions(;start_year=1850, end_year=2300)
+    # create vector of model years
+    model_years = collect(start_year:end_year)
+
+    # read in older historical observations (1850-2005) (from RCP files)
+    RCP60 = scenario_df("RCP60")[in(model_years).(scenario_df("RCP60").year), :] # just picked RCP 6.0 scenario, but all scenarios have identical historical data from beginning-2005
+    older_data = RCP60[start_year .<= RCP60.year .<= 2005, [:year, :rcp_co2_emissions]] # get historical data from 1850-2005 (same for all RCP scenarios)
+
+    # read in more recent historical observations (2006-2021) (from Global Carbon Budget)
+    recent_data = DataFrame(XLSX.readtable(joinpath(@__DIR__, "..", "data", "Global_Carbon_Budget_2022v1.0.xlsx"), "Global Carbon Budget", first_row=21)) # read in data
+    recent_data = recent_data[2006 .<= recent_data.Year .<= 2021, [1,2,3]] # get emissions from years 2006-2021
+    recent_data = DataFrame(year=recent_data.Year, rcp_co2_emissions=(recent_data[:,2] .+ recent_data[:,3]) .* 3.67) # add fossil emissions + land-use change emissions, and convert to units of GtCO₂
+
+    # combine older and recent historical data
+    historical_data = vcat(older_data, recent_data) # older_data is 1850-2005; recent_data is 2006-2021
+
+    return historical_data
+end
+
+# -------------------------------------------------------------------------------------------------------------------------------------------- #
+
+# create a function that stores extreme RCP scenario emissions in a matrix (for plotting)
+function rcp_emissions()
+
+    # anthropogenic total CO2 emissions (PgC/yr) (Source: IPCC, 2013: Annex II: Climate System Scenario Tables)
+    rcp26 = [2000 8.03;
+            2010 9.70;
+            2020 9.97;
+            2030 8.00;
+            2040 5.30;
+            2050 3.50;
+            2060 2.10;
+            2070 0.81;
+            2080 0.16;
+            2090 -0.23;
+            2100 -0.42]
+
+    # anthropogenic total CO2 emissions (PgC/yr) (Source: IPCC, 2013: Annex II: Climate System Scenario Tables)
+    rcp85 = [2000 8.03;
+            2010 9.98;
+            2020 12.28;
+            2030 14.53;
+            2040 17.33;
+            2050 20.61;
+            2060 23.83;
+            2070 26.17;
+            2080 27.60;
+            2090 28.44;
+            2100 28.77]
+
+    # multiply by 3.67 to convert PgC/yr to GtCO₂/yr (1 PgC = 1 GtC)
+    rcp26[:,2] = rcp26[:,2] * 3.67
+    rcp85[:,2] = rcp85[:,2] * 3.67
+
+    return rcp26, rcp85 # units of GtCO₂
+end
+
 # -------------------------------------------------------------------------------------------------------------------------------------------- #
 
 # create a function that extracts and stores relevant information for each RCP scenario into a dataframe
@@ -111,23 +194,24 @@ scatter!(years, match_inputs(), markersize=2, label="Closest RCP")
 
 # -------------------------------------------------------------------------------------------------------------------------------------------- #
 
-# create a function that generates one emissions curve given 3 sampled parameters (γ_g, γ_d, t_peak)
-function emissions_curve(; γ_g=0.0065, γ_d=0.0675, t_peak=2115)
+# create a function that generates one emissions curve given 3 sampled parameters (γ_g, t_peak, γ_d)
+function emissions_curve(historical_data::DataFrame; γ_g=0.004, t_peak=2070, γ_d=0.07)
 
-    # allocate space for years and emissions (range from years 2010-2300)
-    t = zeros(Int64, 291)
-    gtco2 = zeros(291)
-    gtco2_tpeak = 0    
+    # allocate space for years and emissions (range from years 1850-2300)
+    t = zeros(Int64, 451) # years
+    gtco2 = zeros(451) # emissions
+    gtco2_tpeak = 0 # initialize value for emissions at peaking time   
 
-    # historical emissions data (Source: https://www.iea.org/reports/global-energy-review-co2-emissions-in-2021-2)
-    historical_years = [2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
-    historical_emissions = [32.4, 33.5, 33.9, 34.5, 34.7, 34.6, 34.6, 35.2, 36.1, 36.1, 34.2, 36.3] # units of GtCO₂
+    # separate historical data df into years and emissions
+    historical_years = historical_data[:, :year]
+    historical_emissions = historical_data[:, :rcp_co2_emissions] # units of GtCO₂
 
-    # add historical emisisons to arrays
-    t[1:12] = historical_years
-    gtco2[1:12] = historical_emissions
+    # add historical emissions to arrays
+    idx = length(historical_years)
+    t[1:idx] = historical_years
+    gtco2[1:idx] = historical_emissions
 
-    for i = 13:length(t) # loop through years
+    for i = idx+1:length(t) # loop through years
 
         t[i] = t[i-1] + 1 # fill in current year to the t array
 
@@ -144,6 +228,7 @@ function emissions_curve(; γ_g=0.0065, γ_d=0.0675, t_peak=2115)
         elseif t[i] > t_peak
             gtco2[i] = gtco2[i-1] - ((2 * gtco2_tpeak * γ_d * exp(γ_d * (t[i] - t_peak))) / (exp(γ_d * (t[i] - t_peak)) + 1)^2) # calculate emissions for current year
         end
+
     end
 
     return t, gtco2 # return years and emissions

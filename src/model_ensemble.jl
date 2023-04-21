@@ -28,20 +28,14 @@ model_years = collect(start_year:end_year)
 num_years = length(model_years)
 num_params = 38
 
-# store dataframe with info for each RCP scenario for appropriate years (historical data from beginning-2005)
+# store dataframe with info for each RCP scenario for appropriate years (contains historical data from beginning-2005)
 RCP26 = scenario_df("RCP26")[in(model_years).(scenario_df("RCP26").year), :]
 RCP45 = scenario_df("RCP45")[in(model_years).(scenario_df("RCP45").year), :]
 RCP60 = scenario_df("RCP60")[in(model_years).(scenario_df("RCP60").year), :]
 RCP85 = scenario_df("RCP85")[in(model_years).(scenario_df("RCP85").year), :]
 
-# add in more recent historical observations (2006-2021)
-recent_data = DataFrame(XLSX.readtable(joinpath(@__DIR__, "..", "data", "Global_Carbon_Budget_2022v1.0.xlsx"), "Global Carbon Budget", first_row=21)) # read in data
-recent_data = recent_data[2006 .<= recent_data.Year .<= 2021, [1,2,3]] # get emissions from years 2006-2021
-recent_data = DataFrame(year=recent_data.Year, rcp_co2_emissions=(recent_data[:,2] .+ recent_data[:,3]) .* 3.67) # add fossil emissions + land-use change emissions, and convert to units of GtCO₂
-
-# combine older and recent historical data
-older_data = RCP60[start_year .<= RCP60.year .<= 2005, [:year, :rcp_co2_emissions]] # get historical data from 1850-2005 (same for all RCP scenarios)
-historical_data = vcat(older_data, recent_data) # older_data is 1850-2005; recent_data is 2006-2021
+# read in historical emissions observations (1850-2021)
+historical_data = historical_emissions(start_year=start_year, end_year=end_year)
 
 # create instance of SNEASY-BRICK
 m = MimiBRICK.create_sneasy_brick(start_year=start_year, end_year=end_year) # 1 year timestep
