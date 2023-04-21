@@ -33,7 +33,8 @@ end
 # function that runs through full flow of emissions -> SNEASY-BRICK, produces outputs, and saves them to a csv
 #= to change back to old function that produces all outputs in csv for sobol_input_A and sobol_input_B:
     function call: model_ensemble(;num_samples, calibrated_params::String="sobol_input_A", output_dir::String="sobol_output_A")
-    uncomment line 62 & lines 287-297, delete line 300
+    uncomment lines 63, 272, 275, 288-298
+    delete line 301
 =#
 function model_ensemble(;num_samples, calibrated_params)
     # initial set up
@@ -56,6 +57,7 @@ function model_ensemble(;num_samples, calibrated_params)
     m = MimiBRICK.create_sneasy_brick(start_year=start_year, end_year=end_year) # 1 year timestep
 
     # add in sampling for land water storage
+    Random.seed!(1)
     lw_storage =  rand(Normal(0.0003, 0.00018), num_samples, num_years)
 
     # read in the input parameters
@@ -268,10 +270,10 @@ function model_ensemble(;num_samples, calibrated_params)
     end
 
     # save parameter names for df
-    param_names = ["gamma_g", "t_peak", "gamma_d", "CO2_0", "N2O_0", names(calibrated_params)[19+n:end]...]
+    #param_names = ["gamma_g", "t_peak", "gamma_d", "CO2_0", "N2O_0", names(calibrated_params)[19+n:end]...]
 
     # transform matrices to dataframes to improve interpretability (add parameter names/years)
-    parameters_df                   = DataFrame(parameters, param_names)
+    #parameters_df                   = DataFrame(parameters, param_names)
     co2_emissions_df                = DataFrame(co2_emissions, Symbol.([model_years...]))
     radiative_forcing_df            = DataFrame(radiative_forcing, Symbol.([model_years...]))
     temperature_df                  = DataFrame(temperature, Symbol.([model_years...]))
