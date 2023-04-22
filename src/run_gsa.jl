@@ -7,8 +7,8 @@ using GlobalSensitivity
 include("gsa_functions.jl")
 
 # define size of ensemble and number of bootstrap samples
-n_samples = 100 #100000
-n_boot = 100 #10000 # one order of magnitude below n_samples
+n_samples = 10 #100000
+n_boot = 1 #10000 # one order of magnitude below n_samples
 
 # intialize values for years
 current_year = 2030 # first year for sensitivity analysis (don't need analyze historical data)
@@ -70,7 +70,8 @@ my_gmslr = model_ensemble(num_samples=n_samples, calibrated_params=Matrix(A))
 my_yr = f(Matrix(A), n_samples=n_samples)
 
 # conduct global sensitivity analysis
-gsa(M -> f(M, n_samples=n_samples, year=2100), Sobol(order=[0,1], nboot=n_boot), Matrix(A), Matrix(B), batch=true)
+gsa(M -> f(M, n_samples=n_samples, year=2100), Sobol(), Matrix(A), Matrix(B), batch=true)
+# Sobol(order=[0,1], nboot=n_boot)
 
 # -------------------------------------------------------------------------------------------------------------------------------------------- #
 
@@ -79,7 +80,7 @@ my_gmslr = model_ensemble(num_samples=n_samples, calibrated_params=Matrix(A))
 my_yr = f(Matrix(A), n_samples=n_samples)
 col = findfirst(2100 .∈ 1850:2300)
 my_gmslr[:, col]
-
+#=
 function new_fun(M; year=2100)
     for row in eachrow(M)
         model_ensemble(num_samples=n_samples, calibrated_params=M)
@@ -91,10 +92,8 @@ end
 sobol[:,i] = gsa(M -> f(M, yr=yr[i]), Sobol(order=[0,1], nboot=n_boot), A, B, batch=true) # this will output n_years x n_parameters
 
 gsa = gsa(f, Sobol(order=[0,1], nboot=n_boot), A, B, batch=false) # this will output n_years x n_parameters
-
+=#
 # -------------------------------------------------------------------------------------------------------------------------------------------- #
-
-# below this is old stuff, not relevant
 #=
 # function f(M) that takes in a matrix M, which is the same size as A and B
 # A and B and M are all size (n_samples x n_years)
@@ -108,7 +107,7 @@ function old_f(M; A=A, B=B, year=2100)
     end
     return out
 end
-
+=#
 #=
 for i in 1:size(M,1) # loop through rows of M
     col = findfirst(yr -> yr == year, start_year:end_year) # find index for column containing the year specified
