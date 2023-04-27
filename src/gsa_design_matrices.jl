@@ -6,6 +6,7 @@ using QuasiMonteCarlo
 
 include("gsa_functions.jl")
 
+Random.seed!(1)
 # define size of ensemble
 n_samples = 100_000
 
@@ -82,9 +83,3 @@ B_df = DataFrame(B, param_names)
 # write A and B design matrices to .csv files (each with size n_samples x n_params)
 save(joinpath(@__DIR__, "..", "results", "sa_results", "sobol_input_A.csv"), A_df)
 save(joinpath(@__DIR__, "..", "results", "sa_results", "sobol_input_B.csv"), B_df)
-
-#----------------------------------------------- Return output in csv files for sobol_input_A and sobol_input_B ------------------------------------------------------------------------#
-
-# returns a collection of csv files containing corresponding outputs for inputs of design matrices A and B
-#model_ensemble(num_samples=n_samples, calibrated_params="sobol_input_A", output_dir="sobol_output_A")
-#model_ensemble(num_samples=n_samples, calibrated_params="sobol_input_B", output_dir="sobol_output_B")
