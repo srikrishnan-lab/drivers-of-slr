@@ -7,8 +7,7 @@ using QuasiMonteCarlo
 include("gsa_functions.jl")
 
 Random.seed!(1)
-# define size of ensemble
-n_samples = 100_000
+n_samples = 100_000 # define size of ensemble
 
 #----------------------------------------------- Create design matrices A1 and B1 (for emissions parameters) ------------------------------------------------------------------------------------#
 
@@ -79,6 +78,16 @@ param_names = ["gamma_g", "t_peak", "gamma_d", names(mcmc_params)...]
 # save design matrices as df to add parameter names
 A_df = DataFrame(A, param_names)
 B_df = DataFrame(B, param_names)
+
+#----------------------------------------------- Adjust parameters and save files ----------------------------------------------------------------------------------------------------#
+
+# remove three columns for unused parameters (σ²_white_noise_CO₂, α₀_CO₂, and temperature_0)
+select!(A_df, Not([:sigma_whitenoise_co2, :alpha0_CO2, :temperature_0]))
+select!(B_df, Not([:sigma_whitenoise_co2, :alpha0_CO2, :temperature_0]))
+
+# add column for land water storage random sample
+A_df[!, :lw_random_sample] = rand(Normal(0.0003, 0.00018), n_samples)
+B_df[!, :lw_random_sample] = rand(Normal(0.0003, 0.00018), n_samples)
 
 # write A and B design matrices to .csv files (each with size n_samples x n_params)
 save(joinpath(@__DIR__, "..", "results", "sa_results", "sobol_input_A.csv"), A_df)
