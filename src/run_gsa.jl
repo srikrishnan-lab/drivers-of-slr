@@ -58,7 +58,7 @@ total_CI = zeros(n_params, n_years)
 # conduct global sensitivity analysis
 for i in 1:length(yrs)
     
-    sobol_output = gsa(M -> brick_run(M; yr=2), Sobol(order=[0,1]), transpose(Matrix(A)[1:100,:]), transpose(Matrix(B)[1:100,:]), batch=true)
+    sobol_output = gsa(M -> brick_run(M; yr=yrs[i]), Sobol(order=[0,1]), transpose(Matrix(A)[1:100,:]), transpose(Matrix(B)[1:100,:]), batch=true)
 
     # first and total order
     first_order[:,i] = sobol_output.S1
