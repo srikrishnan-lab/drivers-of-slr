@@ -22,7 +22,7 @@ gsa_first_yr = 2030 # don't need analyze historical data
 gsa_last_yr = 2300
 
 # vector of years that we want to consider
-yrs = collect(gsa_first_yr:10:gsa_last_yr) # yr = yrs[i]
+yrs = collect(2100:100:gsa_last_yr)
 
 # -------------------------------------------------------------------------------------------------------------------------------------------- #
 
@@ -42,15 +42,9 @@ function f(v; yr=2100)
     return yr_gmslr # return GMSLR for the specified year (Float64 scalar)
 end
 
-# conduct global sensitivity analysis
-sobol_output = gsa(v -> f(v; yr=2100), Sobol(order=[0,1], nboot=2), transpose(Matrix(A)[1:5, :]), transpose(Matrix(B)[1:5, :]))
-println(sobol_output)
-# -------------------------------------------------------------------------------------------------------------------------------------------- #
-# save output
-
 #initialize values
 n_params = size(A,2)
-n_years = 1
+n_years = length(yrs)
 param_names = names(A)
 
 # first and total order have size (n_params)
@@ -62,20 +56,26 @@ total_CI = zeros(n_params, n_years)
 #second_order = zeros(n_params, n_params)
 #second_CI = zeros(n_params, n_params)
 
-# first and total order
-first_order[:,1] = sobol_output.S1
-first_CI[:,1] = sobol_output.S1_Conf_Int
-total_order[:,1] = sobol_output.ST
-total_CI[:,1] = sobol_output.ST_Conf_Int
-# second order
-#second_order = sobol_output.S2
-#second_CI = sobol_output.S2_Conf_Int
+# conduct global sensitivity analysis
+for i in 1:length(yrs)
+    
+    sobol_output = gsa(v -> f(v; yr=yrs[i]), Sobol(order=[0,1], nboot=2), transpose(Matrix(A)[1:20, :]), transpose(Matrix(B)[1:20, :]))
+
+    # first and total order
+    first_order[:,i] = sobol_output.S1
+    first_CI[:,i] = sobol_output.S1_Conf_Int
+    total_order[:,i] = sobol_output.ST
+    total_CI[:,i] = sobol_output.ST_Conf_Int
+    # second order
+    #second_order = sobol_output.S2
+    #second_CI = sobol_output.S2_Conf_Int
+end
 
 # convert Matrix to df and add column names (years)
-first_order_df = DataFrame(first_order, ["2100"])
-first_CI_df = DataFrame(first_CI, ["2100"])
-total_order_df = DataFrame(total_order, ["2100"])
-total_CI_df = DataFrame(total_CI, ["2100"])
+first_order_df = DataFrame(first_order, Symbol.([yrs...]))
+first_CI_df = DataFrame(first_CI, Symbol.([yrs...]))
+total_order_df = DataFrame(total_order, Symbol.([yrs...]))
+total_CI_df = DataFrame(total_CI, Symbol.([yrs...]))
 # second order
 #second_order_df = DataFrame(second_order, param_names)
 #second_CI_df = DataFrame(second_CI, param_names)
