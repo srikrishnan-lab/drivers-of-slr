@@ -195,11 +195,13 @@ scatter!(years, match_inputs(), markersize=2, label="Closest RCP")
 # -------------------------------------------------------------------------------------------------------------------------------------------- #
 
 # create a function that generates one emissions curve given 3 sampled parameters (γ_g, t_peak, γ_d)
-function emissions_curve(historical_data::DataFrame; γ_g=0.004, t_peak=2070, γ_d=0.07)
+function emissions_curve(historical_data::DataFrame; γ_g=0.004, t_peak=2070, γ_d=0.07, start_year=1850, end_year = 2300)
 
-    # allocate space for years and emissions (range from years 1850-2300)
-    t = zeros(Int64, 451) # years
-    gtco2 = zeros(451) # emissions
+    # allocate space for years and emissions
+    model_years = collect(start_year:end_year)
+    num_years = length(model_years)
+    t = zeros(Int64, num_years) # years
+    gtco2 = zeros(num_years) # emissions
     gtco2_tpeak = 0 # initialize value for emissions at peaking time   
 
     # separate historical data df into years and emissions

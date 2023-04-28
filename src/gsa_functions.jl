@@ -97,7 +97,7 @@ function construct_run_sneasybrick(start_year::Int, end_year::Int)
         t_peak  = param[2]
         γ_d     = param[3]
 
-        t, gtco2 = emissions_curve(historical_data, γ_g=γ_g, t_peak=t_peak, γ_d=γ_d) # years and emissions
+        t, gtco2 = emissions_curve(historical_data, γ_g=γ_g, t_peak=t_peak, γ_d=γ_d, start_year=start_year, end_year=end_year) # years and emissions
         gtco2 ./= 3.67 # divide by 3.67 to convert GtCO₂/yr to GtC/yr (SNEASY needs input of GtC/yr)
 
 

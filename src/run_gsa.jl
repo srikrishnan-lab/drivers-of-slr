@@ -35,10 +35,9 @@ yrs = collect(gsa_first_yr:100:gsa_last_yr)
 function brick_run(M::Matrix{Float64}; yr=2100)
     # intialize values
     start_year = 1850
-    end_year = 2300
 
     # function returns a df of global mean sea level rise values
-    gmslr = model_ensemble(M, start_year=start_year, end_year=end_year)
+    gmslr = model_ensemble(M, start_year=start_year, end_year=yr)
 
     return (gmslr .- mean(gmslr)) / std(gmslr) # return centered GMSLR for the specified year (vector with length n_samples)
 end
