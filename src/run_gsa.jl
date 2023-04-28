@@ -16,30 +16,29 @@ n_boot = 10 #10000 # one order of magnitude below n_samples # try 100
 # read in the formatted design matrices A and B
 A = DataFrame(load(joinpath(@__DIR__, "..", "results", "sa_results", "sobol_input_A.csv")))
 B = DataFrame(load(joinpath(@__DIR__, "..", "results", "sa_results", "sobol_input_B.csv")))
+select!(A, Not([:sigma_whitenoise_co2, :alpha0_CO2]))
+select!(B, Not([:sigma_whitenoise_co2, :alpha0_CO2]))
 
 # intialize values for years to analyze in sensitivity analysis
 gsa_first_yr = 2030 # don't need analyze historical data
 gsa_last_yr = 2300
 
 # vector of years that we want to consider
-yrs = collect(2100:100:gsa_last_yr)
+yrs = collect(gsa_first_yr:100:gsa_last_yr)
 
 # -------------------------------------------------------------------------------------------------------------------------------------------- #
 
-#function that takes in an input vector v that is a set of parameters, and then returns a vector of GMSLR for a given year
-function f(v; yr=2100)
+
+# function that takes in an input matrix M where each row is a set of parameters, and then returns a vector of GMSLR for a given year
+function brick_run(M::Matrix{Float64}; yr=2100)
     # intialize values
     start_year = 1850
     end_year = 2300
 
-    # function returns a df of global mean sea level rise values from 1850-2300
-    gmslr = model_ensemble(calibrated_params=v, start_year=start_year, end_year=end_year)
+    # function returns a df of global mean sea level rise values
+    gmslr = model_ensemble(M, start_year=start_year, end_year=end_year)
 
-    # subset df to get values for desired year
-    col = findfirst(yr .∈ start_year:end_year) # gets index for column of specified year
-    yr_gmslr = gmslr[:,col]
-       
-    return yr_gmslr # return GMSLR for the specified year (Float64 scalar)
+    return gmslr # return GMSLR for the specified year (vector with length n_samples)
 end
 
 #initialize values
@@ -59,7 +58,7 @@ total_CI = zeros(n_params, n_years)
 # conduct global sensitivity analysis
 for i in 1:length(yrs)
     
-    sobol_output = gsa(v -> f(v; yr=yrs[i]), Sobol(order=[0,1], nboot=2), transpose(Matrix(A)[1:20, :]), transpose(Matrix(B)[1:20, :]))
+    sobol_output = gsa(M -> brick_run(M; yr=2), Sobol(order=[0,1]), transpose(Matrix(A)[1:100,:]), transpose(Matrix(B)[1:100,:]), batch=true)
 
     # first and total order
     first_order[:,i] = sobol_output.S1
@@ -97,135 +96,3 @@ save(joinpath(@__DIR__, "..", "results", "sa_results", "test", "total_CI.csv"), 
 # second order
 #save(joinpath(@__DIR__, "..", "results", "sa_results", "test", "second_order", "sens_2150.csv"), second_order_df)
 #save(joinpath(@__DIR__, "..", "results", "sa_results", "test", "second_order", "CI_2150.csv"), second_CI_df)
-
-
-#= EVERYTHING BELOW HERE IS OLD AND FOR REFERENCE/IN CASE ONLY
-# -------------------------------------------------------------------------------------------------------------------------------------------- #
-# !!!!!attempt for batch=TRUE (NOT using matchrow() approach)!!!!!
-
-# function that takes in an input matrix M where each row is a set of parameters, and then returns a vector of GMSLR for a given year
-function f(M; yr=2100)
-    # intialize values
-    start_year = 1850
-    end_year = 2300
-
-    # function returns a df of global mean sea level rise values
-    gmslr = model_ensemble(calibrated_params=M, start_year=start_year, end_year=end_year)
-
-    # subset df to get values for desired year
-    col = findfirst(yr .∈ start_year:end_year) # gets index for column of specified year
-    yr_gmslr = gmslr[:,col]
-       
-    return yr_gmslr' # return GMSLR for the specified year (vector with length n_samples)
-end
-
-# conduct global sensitivity analysis
-sobol_output = gsa(M -> f(M; yr=2100), Sobol(order=[0,1]), transpose(Matrix(A)[1:10,:]), transpose(Matrix(B)[1:10,:]), batch=true)
-
-# -------------------------------------------------------------------------------------------------------------------------------------------- #
-# !!!!!attempt for batch=FALSE (NOT using matchrow() approach)!!!!!
-
-#function that takes in an input vector v that is a set of parameters, and then returns a vector of GMSLR for a given year
-function f(v; yr=2100)
-    # intialize values
-    start_year = 1850
-    end_year = 2300
-
-    # function returns a df of global mean sea level rise values from 1850-2300
-    gmslr = model_ensemble(calibrated_params=v, start_year=start_year, end_year=end_year)
-
-    # subset df to get values for desired year
-    col = findfirst(yr .∈ start_year:end_year) # gets index for column of specified year
-    yr_gmslr = gmslr[:,col]
-       
-    return yr_gmslr # return GMSLR for the specified year (Float64 scalar)
-end
-
-# conduct global sensitivity analysis
-sobol_output = gsa(v -> f(v; yr=2100), Sobol(order=[0,1], nboot=10), transpose(Matrix(A)[1:10, :]), transpose(Matrix(B)[1:10, :]))
-
-# batch=false test (this works)
-my_gmslr_2 = model_ensemble(calibrated_params=Vector(A[1,:]))
-my_yr_2 = f(Vector(A[1,:]))
-
-# -------------------------------------------------------------------------------------------------------------------------------------------- #
-# !!!!!!! matchrow() approach function WITH transposing!!!!!!!!!
-
-# run function to return a collection of csv files containing corresponding outputs for inputs of design matrices A and B
-#model_ensemble(num_samples=n_samples, calibrated_params="sobol_input_A", output_dir="sobol_output_A")
-#model_ensemble(num_samples=n_samples, calibrated_params="sobol_input_B", output_dir="sobol_output_B")
-
-# read in relevant output (global mean sea level rise) for both A and B
-A_gmslr = DataFrame(load(joinpath(@__DIR__, "..", "results", "sa_results", "sobol_output_A", "gmslr.csv")))
-B_gmslr = DataFrame(load(joinpath(@__DIR__, "..", "results", "sa_results", "sobol_output_B", "gmslr.csv")))
-
-A_gmslr = transpose(Matrix(A_gmslr))
-B_gmslr = transpose(Matrix(B_gmslr))
-
-function transpose_f(M_in; A_in=A_params, B_in=B_params, A_out=A_gmslr, B_out=B_gmslr, year=2100) # takes in M_in, which is a matrix of parameters (same size as A_in and B_in)
-    # initialize model years
-    start_year = 1850
-    end_year = 2300
-
-    # concatenate A and B parameter inputs to get matrix C_in (n_samples x n_params)
-    C_in = hcat(A_in, B_in)
-    # concatenate A and B GMSLR output to get matrix C_out (n_samples x n_years)
-    C_out = hcat(A_out, B_out)
-
-    # initialize vector to store output (length of n_samples)
-    output = zeros(size(A_out,2))
-
-    # function that returns the index of the first row in the df (C_in) that matches the inputted row (in M_in)
-    match_row(row, df) = findfirst(i -> all(j -> row[j] == df[i,j], 1:size(df,2)), 1:size(df,1))
-    match_col(col, df) = findfirst(i -> all(j -> col[j] == df[j,i], 1:size(df,1)), 1:size(df,2))
-
-    # loop through cols of M_in (each column is a set of samples)
-    n_cols = size(M_in,2)
-    for i in 1:n_cols
-        j = match_col(M_in[:,i], C_in) # j is the desired column index
-        #j = match_row(M_in, C_in') # j is the desired row index
-        row = findfirst(year .∈ start_year:end_year) # find index for column containing the year specified
-        output[i] = C_out[row,j]
-    end
-
-    # return the output for the year specified (vector with length of n_samples)
-    return output'
-end
-
-gsa(transpose_f, Sobol(), A_params, B_params, batch=true)
-
-# -------------------------------------------------------------------------------------------------------------------------------------------- #
-# !!!!!!! matchrow() approach function WITHOUT transposing!!!!!!!!!
-
-this is right, except for the issue of tranposing. so it's right if gsa didn't need tranpose
-function f_no_transpose(M_in; A_in=A_params, B_in=B_params, A_out=A_gmslr, B_out=B_gmslr, year=2100) # takes in M_in, which is a matrix of parameters (same size as A_in and B_in)
-    # initialize model years
-    start_year = 1850
-    end_year = 2300
-
-    # concatenate A and B parameter inputs to get matrix C_in (n_samples x n_params)
-    C_in = vcat(A_in, B_in)
-    # concatenate A and B GMSLR output to get matrix C_out (n_samples x n_years)
-    C_out = vcat(A_out, B_out)
-
-    # initialize vector to store output (length of n_samples)
-    output = zeros(size(A_out,1))
-
-    # function that returns the index of the first row in the df (C_in) that matches the inputted row (in M_in)
-    match_row(row, df) = findfirst(i -> all(j -> row[j] == df[i,j], 1:size(df,2)), 1:size(df,1))
-
-    # loop through rows of M_in (each row is a set of samples)
-    n_rows = size(M_in, 1)
-    for i in 1:n_rows
-        j = match_row(M_in[i,:], C_in) # j is the desired row index
-        #j = match_row(M_in, C_in') # j is the desired row index
-        col = findfirst(year .∈ start_year:end_year) # find index for column containing the year specified
-        output[i] = C_out[j,col]
-    end
-
-    # return the output for the year specified (vector with length of n_samples)
-    return output
-end
-
-# -------------------------------------------------------------------------------------------------------------------------------------------- #
-=#
