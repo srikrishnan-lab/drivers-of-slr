@@ -10,7 +10,7 @@ include("gsa_functions.jl")
 
 # define size of ensemble and number of bootstrap samples
 #n_samples = 1000 #100000
-n_boot = 10 #10000 # one order of magnitude below n_samples 
+n_boot = 10 #10000 # one order of magnitude below n_samples # try 100
 # nboot needs to be less than the number of COLUMNS in A and B
 
 # read in the formatted design matrices A and B
@@ -47,7 +47,6 @@ sobol_output = gsa(v -> f(v; yr=2100), Sobol(order=[0,1], nboot=2), transpose(Ma
 println(sobol_output)
 # -------------------------------------------------------------------------------------------------------------------------------------------- #
 # save output
-#output = Dict("2100" => Dict("first_order" => sobol_output.S1, "first_CI" =>sobol_output.S1_Conf_Int, "total_order" => sobol_output.ST, "total_CI" => sobol_output.ST_Conf_Int))
 
 #initialize values
 n_params = size(A,2)
