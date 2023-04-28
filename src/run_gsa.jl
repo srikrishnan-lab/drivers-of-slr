@@ -3,17 +3,18 @@ Pkg.activate(joinpath(@__DIR__, ".."))
 Pkg.instantiate()
 
 using GlobalSensitivity
-using CSVFiles
-using DataFrames
 
 include("gsa_functions.jl")
 
 # define size of ensemble and number of bootstrap samples
-#n_samples = 1000 #100000
-n_boot = 10 #10000 # one order of magnitude below n_samples # try 100
-# nboot needs to be less than the number of COLUMNS in A and B
+n_samples = 100 #100000
+n_boot = 100 #10000 # one order of magnitude below n_samples
 
-# read in the formatted design matrices A and B
+# intialize values for years
+current_year = 2030 # first year for sensitivity analysis (don't need analyze historical data)
+end_year = 2300
+
+# read in the design matrices A and B
 A = DataFrame(load(joinpath(@__DIR__, "..", "results", "sa_results", "sobol_input_A.csv")))
 B = DataFrame(load(joinpath(@__DIR__, "..", "results", "sa_results", "sobol_input_B.csv")))
 select!(A, Not([:sigma_whitenoise_co2, :alpha0_CO2]))
@@ -27,6 +28,7 @@ gsa_last_yr = 2300
 yrs = collect(gsa_first_yr:100:gsa_last_yr)
 
 # -------------------------------------------------------------------------------------------------------------------------------------------- #
+#attempt for batch=false
 
 
 # function that takes in an input matrix M where each row is a set of parameters, and then returns a vector of GMSLR for a given year
