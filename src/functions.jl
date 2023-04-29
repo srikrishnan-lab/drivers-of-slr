@@ -5,7 +5,6 @@ using Distributions
 # -------------------------------------------------------------------------------------------------------------------------------------------- #
 
 #= create a function that simulates a stationary AR(1) process to superimpose noise onto the climate model projections
-
 Function Arguments:
     num_years = number of time periods (years) the model is being run for
     σ         = calibrated standard deviation
@@ -181,12 +180,10 @@ plot(RCP26.year, RCP26.rcp_co2_emissions, xlabel="Year", ylabel="CO₂ emissions
 plot!(RCP45.year, RCP45.rcp_co2_emissions, label="RCP 4.5")
 plot!(RCP60.year, RCP60.rcp_co2_emissions, label="RCP 6.0")
 plot!(RCP85.year, RCP85.rcp_co2_emissions, label="RCP 8.5")
-
 # add line for DICE scenario
 years = final_co2_df[:,:Year]
 emissions = final_co2_df[:,:Emissions]
 plot!(years, emissions, label="DICE Scenario")
-
 # add dots for closest RCP scenario to the DICE scenario in question
 scatter!(years, match_inputs(), markersize=2, label="Closest RCP")
 #savefig(joinpath(@__DIR__, "input_plot.pdf"))
@@ -195,7 +192,7 @@ scatter!(years, match_inputs(), markersize=2, label="Closest RCP")
 # -------------------------------------------------------------------------------------------------------------------------------------------- #
 
 # create a function that generates one emissions curve given 3 sampled parameters (γ_g, t_peak, γ_d)
-function emissions_curve(historical_data::DataFrame; γ_g=0.004, t_peak=2070, γ_d=0.07, start_year=1850, end_year = 2300)
+function emissions_curve(historical_data::DataFrame; γ_g=0.004, t_peak=2070, γ_d=0.07, start_year=1850, end_year=2300)
 
     # allocate space for years and emissions
     model_years = collect(start_year:end_year)

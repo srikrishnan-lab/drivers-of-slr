@@ -88,6 +88,7 @@ function construct_run_sneasybrick(start_year::Int, end_year::Int)
         antarctic_slope          = param[50]
         antarctic_λ              = param[51]
         antarctic_temp_threshold = param[52]
+        lw_random_sample         = param[53]
 
         #----------------------------------------------------------
         # Set SNEASY+BRICK to use sampled parameter values.
@@ -100,9 +101,9 @@ function construct_run_sneasybrick(start_year::Int, end_year::Int)
         t, gtco2 = emissions_curve(historical_data, γ_g=γ_g, t_peak=t_peak, γ_d=γ_d, start_year=start_year, end_year=end_year) # years and emissions
         gtco2 ./= 3.67 # divide by 3.67 to convert GtCO₂/yr to GtC/yr (SNEASY needs input of GtC/yr)
 
-
         # feed CO₂ emissions into SNEASY-BRICK
         update_param!(m, :ccm, :CO2_emissions, gtco2)
+        
         # --------------------------- Match inputs for N₂O concentration, aerosol forcing, and other forcing to closest RCP scenario ---------------------------- #
 
         # match inputs to closest RCP scenario for each year
@@ -113,6 +114,9 @@ function construct_run_sneasybrick(start_year::Int, end_year::Int)
         update_param!(m, :rfco2, :N₂O, n2o_concentration)
         update_param!(m, :radiativeforcing, :rf_aerosol, aerosol_forcing)
         update_param!(m, :radiativeforcing, :rf_other, other_forcing)
+
+        # ---- Land Water Storage ---- #
+        update_param!(m, :landwater_storage, :lws_random_sample, fill(lw_random_sample, length(model_years)))
 
         # ---- Shared Parameters ---- #
         update_param!(m, :model_CO₂_0, CO₂_0) # connects to :ccm and :rfco2
