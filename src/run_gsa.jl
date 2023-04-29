@@ -6,8 +6,7 @@ using GlobalSensitivity
 
 include("gsa_functions.jl")
 
-# define size of ensemble and number of bootstrap samples
-n_samples = 100 #100000
+# define number of bootstrap samples
 n_boot = 100 #10000 # one order of magnitude below n_samples
 
 # read in the design matrices A and B
@@ -19,10 +18,10 @@ gsa_first_yr = 2030 # don't need analyze historical data
 gsa_last_yr = 2300
 
 # vector of years that we want to consider
-yrs = collect(2100:100:2300)
+yrs = collect(gsa_first_yr:10:gsa_last_yr)
 
 # specify directory to store results
-output_dir = "test"
+output_dir = "default"
 
 # -------------------------------------------------------------------------------------------------------------------------------------------- #
 
@@ -54,8 +53,9 @@ total_CI = zeros(n_params, n_years)
 # loop through years we want to analyze
 for i in 1:length(yrs)
 
+    current_yr = yrs[i]
     # conduct global sensitivity analysis
-    sobol_output = gsa(M -> brick_run(M; yr=yrs[i]), Sobol(order=[0,1,2], nboot=2), transpose(Matrix(A)[1:5,:]), transpose(Matrix(B)[1:5,:]), batch=true)
+    sobol_output = gsa(M -> brick_run(M; yr=current_yr), Sobol(order=[0,1,2], nboot=n_boot), transpose(Matrix(A)[1:5,:]), transpose(Matrix(B)[1:5,:]), batch=true)
 
     # store first and total order sensitivities and confidence intervals
     first_order[:,i] = sobol_output.S1
@@ -63,19 +63,21 @@ for i in 1:length(yrs)
     total_order[:,i] = sobol_output.ST
     total_CI[:,i] = sobol_output.ST_Conf_Int
 
-    # store second order sensitivities and confidence intervals
-    second_order = sobol_output.S2
-    second_CI = sobol_output.S2_Conf_Int
-    # convert Matrix to df and add column names (parameter names)
-    second_order_df = DataFrame(second_order[:,:,1], param_names)
-    second_CI_df = DataFrame(second_CI[:,:,1], param_names)
-    # add a column to each df containing parameter names
-    insertcols!(second_order_df, 1, :parameter => param_names)
-    insertcols!(second_CI_df, 1, :parameter => param_names)
-    # save the results to csv files
-    current_yr = yrs[i]
-    save(joinpath(@__DIR__, "..", "results", "sa_results", "$output_dir", "second_order", "sens_$current_yr.csv"), second_order_df)
-    save(joinpath(@__DIR__, "..", "results", "sa_results", "$output_dir", "second_order", "CI_$current_yr.csv"), second_CI_df)
+    # every 50 years, calculate second order interactions
+    if current_yr % 50 == 0
+        # store second order sensitivities and confidence intervals
+        second_order = sobol_output.S2
+        second_CI = sobol_output.S2_Conf_Int
+        # convert Matrix to df and add column names (parameter names)
+        second_order_df = DataFrame(second_order[:,:,1], param_names)
+        second_CI_df = DataFrame(second_CI[:,:,1], param_names)
+        # add a column to each df containing parameter names
+        insertcols!(second_order_df, 1, :parameter => param_names)
+        insertcols!(second_CI_df, 1, :parameter => param_names)
+        # save the results to csv files
+        save(joinpath(@__DIR__, "..", "results", "sa_results", "$output_dir", "second_order", "sens_$current_yr.csv"), second_order_df)
+        save(joinpath(@__DIR__, "..", "results", "sa_results", "$output_dir", "second_order", "CI_$current_yr.csv"), second_CI_df)
+    end
 
 end
 
