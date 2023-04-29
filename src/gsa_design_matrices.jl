@@ -81,9 +81,9 @@ B_df = DataFrame(B, param_names)
 
 #----------------------------------------------- Adjust parameters and save files ----------------------------------------------------------------------------------------------------#
 
-# remove three columns for unused parameters (σ²_white_noise_CO₂, α₀_CO₂, and temperature_0)
-select!(A_df, Not([:sigma_whitenoise_co2, :alpha0_CO2, :temperature_0]))
-select!(B_df, Not([:sigma_whitenoise_co2, :alpha0_CO2, :temperature_0]))
+# remove columns for unused parameters (σ²_white_noise_CO₂ and α₀_CO₂)
+select!(A_df, Not([:sigma_whitenoise_co2, :alpha0_CO2]))
+select!(B_df, Not([:sigma_whitenoise_co2, :alpha0_CO2]))
 
 # add column for land water storage random sample
 A_df[!, :lw_random_sample] = rand(Normal(0.0003, 0.00018), n_samples)
