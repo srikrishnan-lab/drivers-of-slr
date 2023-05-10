@@ -1,3 +1,5 @@
+# this script plots the 90%, 95%, and 99% credible intervals for emissions trajectories
+
 using Pkg
 Pkg.activate(joinpath(@__DIR__, ".."))
 Pkg.instantiate()
