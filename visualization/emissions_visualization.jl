@@ -5,6 +5,7 @@ using Pkg
 Pkg.activate(joinpath(@__DIR__, ".."))
 Pkg.instantiate()
 
+using Plots
 include("../src/functions.jl")
 
 # initialize values

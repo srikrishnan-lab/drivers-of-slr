@@ -5,11 +5,7 @@ Pkg.activate(joinpath(@__DIR__, ".."))
 Pkg.instantiate()
 
 using Plots
-using Distributions
-using DataFrames
-using CSVFiles
-using XLSX
-
+using Random
 include("../src/functions.jl")
 
 let num_samples = 10_000
