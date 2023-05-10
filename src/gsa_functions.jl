@@ -13,6 +13,24 @@ using CSVFiles
 include("functions.jl")
 Random.seed!(1)
 
+# -------------------------------------------------------------------------------------------------------------------------------------------- #
+
+# function that establishes bandwidth for kernel density estimate (from KernelEstimator.jl)
+function bwnormal(xdata::Vector)
+    0.9 * min((quantile(xdata, .75) - quantile(xdata, .25)) / 1.34, std(xdata)) * length(xdata) ^ (-0.2)
+end
+
+# -------------------------------------------------------------------------------------------------------------------------------------------- #
+
+# function that samples from a Gaussian distribution near parameter values and map to [0, 1]
+function sample_value(;n_samples, param_vals, bw, bounds)
+    # sample n_samples from a truncated Normal distribution with mean of param_vals and stdev of bw, staying inside specified bounds
+    samples = rand(truncated(Normal(param_vals, bw), first(bounds), last(bounds)), n_samples)
+    return samples
+end
+
+# -------------------------------------------------------------------------------------------------------------------------------------------- #
+
 function construct_run_sneasybrick(start_year::Int, end_year::Int)
 
     model_years = collect(start_year:end_year)
@@ -215,32 +233,16 @@ function construct_run_sneasybrick(start_year::Int, end_year::Int)
     # Return run model function.
     return run_sneasybrick!
 end
-# -------------------------------------------------------------------------------------------------------------------------------------------- #
-
-# function that establishes bandwidth for kernel density estimate (from KernelEstimator.jl)
-function bwnormal(xdata::Vector)
-    0.9 * min((quantile(xdata, .75) - quantile(xdata, .25)) / 1.34, std(xdata)) * length(xdata) ^ (-0.2)
-end
 
 # -------------------------------------------------------------------------------------------------------------------------------------------- #
 
-# function that samples from a Gaussian distribution near parameter values and map to [0, 1]
-function sample_value(;n_samples, param_vals, bw, bounds)
-    # sample n_samples from a truncated Normal distribution with mean of param_vals and stdev of bw, staying inside specified bounds
-    samples = rand(truncated(Normal(param_vals, bw), first(bounds), last(bounds)), n_samples)
-    return samples
-end
-
-# -------------------------------------------------------------------------------------------------------------------------------------------- #
-
-# function produces GMSLR for a df of samples
-# changes from batch=true to batch=false -> delete i in indexing, change line 38 to 1 instead of 2
 function model_ensemble(M::Matrix{Float64}; start_year=1850, end_year=2300)
     # initial set up
     num_samples = size(M,2)
     model_years = collect(start_year:end_year)
     num_years = length(model_years)
 
+    # pre-allocate vectors to store model output
     modeled_CO₂               = zeros(num_years)
     modeled_oceanCO₂_flux     = zeros(num_years)
     modeled_temperature       = zeros(num_years)
@@ -254,20 +256,16 @@ function model_ensemble(M::Matrix{Float64}; start_year=1850, end_year=2300)
 
     # create function to run SNEASY-BRICK
     run_sneasy_brick! = construct_run_sneasybrick(start_year, end_year) 
-    # pre-allocate array to store results
-      # Allocate vectors to store model output being calibrated to the observations.
 
     # subset df to get values for desired year
-    yr_index = findfirst(end_year .∈ model_years) # gets index for column of 
-    sealevel_norm_indices_1961_1990 = findall((in)(1961:1990), start_year:end_year) # indices needed to normalize sea level rise sources relative to the 1961-1990 mean
+    yr_index = findfirst(end_year .∈ model_years) # gets index for column of end_year
 
     # loop over each sample input and evaluate the model
     for i = 1:num_samples
         # ----------------------------------------------- Create emissions curves with current set of samples --------------------------------------------------- #
-        p = M[:, i]
         
         # isolate one set of samples and update parameters to those values
-
+        p = M[:, i]
 
         # ---------------------------------------------------- Create and Update SNEASY-BRICK Parameters --------------------------------------------------------- #
 
@@ -292,19 +290,38 @@ function model_ensemble(M::Matrix{Float64}; start_year=1850, end_year=2300)
         
         # calculate the statistical noise
         noise_gmsl = simulate_ar1_noise(num_years, σ_gmsl, ρ_gmsl)
+
         # define indices for the start of statistical noise in 2010
         noise_indices = findall((in)(2010:end_year), start_year:end_year)
+
         # add noise to results from 2010 onwards 
         simulated_gmsl = modeled_gmsl
         simulated_gmsl[noise_indices] += noise_gmsl[noise_indices]
-        # define baseline indices to normalize results
 
-        # subtract off the mean so we have results relative to a baseline
+        # define baseline indices to normalize results relative to the 1961-1990 mean
+        sealevel_norm_indices_1961_1990 = findall((in)(1961:1990), start_year:end_year)
+
+        # subtract off the mean so we have results relative to the baseline
         simulated_gmsl .-= mean(simulated_gmsl[sealevel_norm_indices_1961_1990])
 
         # write current sample to array
-        gmsl_out[i]    = simulated_gmsl[yr_index]   # total sea level rise from all components (m)
+        gmsl_out[i] = simulated_gmsl[yr_index]   # total sea level rise from all components (m)
     end
 
     return gmsl_out
 end
+
+# -------------------------------------------------------------------------------------------------------------------------------------------- #
+
+# function that takes in an input matrix M where each row is a set of parameters, and then returns a vector of GMSLR for a given year
+function brick_run(M::Matrix{Float64}; yr=2100)
+    # intialize values
+    start_year = 1850
+
+    # function returns a df of global mean sea level rise values
+    gmslr = model_ensemble(M, start_year=start_year, end_year=yr)
+
+    return (gmslr .- mean(gmslr)) / std(gmslr) # return centered GMSLR for the specified year (vector with length n_samples)
+end
+
+# -------------------------------------------------------------------------------------------------------------------------------------------- #

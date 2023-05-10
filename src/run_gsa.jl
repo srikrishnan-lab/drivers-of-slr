@@ -3,40 +3,25 @@ Pkg.activate(joinpath(@__DIR__, ".."))
 Pkg.instantiate()
 
 using GlobalSensitivity
-
 include("gsa_functions.jl")
 
-# define number of bootstrap samples
-n_boot = 100 #10000 # one order of magnitude below n_samples
+# define number of samples and number of bootstrap samples
+n_samples = 10_000 # must be less than or equal to number of rows in A/B
+n_boot = 1_000 # one order of magnitude below n_samples
 
-# read in the design matrices A and B
-A = DataFrame(load(joinpath(@__DIR__, "..", "results", "sa_results", "sobol_input_A.csv")))
-B = DataFrame(load(joinpath(@__DIR__, "..", "results", "sa_results", "sobol_input_B.csv")))
+# specify directory to store results
+output_dir = "default"
 
 # intialize values for years to analyze in sensitivity analysis
-gsa_first_yr = 2030 # don't need analyze historical data
+gsa_first_yr = 2030 # don't need to analyze historical data
 gsa_last_yr = 2300
 
 # vector of years that we want to consider
 yrs = collect(gsa_first_yr:10:gsa_last_yr)
 
-# specify directory to store results
-output_dir = "default"
-
-# -------------------------------------------------------------------------------------------------------------------------------------------- #
-
-# function that takes in an input matrix M where each row is a set of parameters, and then returns a vector of GMSLR for a given year
-function brick_run(M::Matrix{Float64}; yr=2100)
-    # intialize values
-    start_year = 1850
-
-    # function returns a df of global mean sea level rise values
-    gmslr = model_ensemble(M, start_year=start_year, end_year=yr)
-
-    return (gmslr .- mean(gmslr)) / std(gmslr) # return centered GMSLR for the specified year (vector with length n_samples)
-end
-
-# -------------------------------------------------------------------------------------------------------------------------------------------- #
+# read in the design matrices A and B
+A = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "sobol_input_A.csv")))
+B = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "sobol_input_B.csv")))
 
 #initialize values
 n_params = size(A,2)
@@ -55,7 +40,7 @@ for i in 1:length(yrs)
 
     current_yr = yrs[i]
     # conduct global sensitivity analysis
-    sobol_output = gsa(M -> brick_run(M; yr=current_yr), Sobol(order=[0,1,2], nboot=n_boot), transpose(Matrix(A)[1:5,:]), transpose(Matrix(B)[1:5,:]), batch=true)
+    sobol_output = gsa(M -> brick_run(M; yr=current_yr), Sobol(order=[0,1,2], nboot=n_boot), transpose(Matrix(A)[1:n_samples,:]), transpose(Matrix(B)[1:n_samples,:]), batch=true)
 
     # store first and total order sensitivities and confidence intervals
     first_order[:,i] = sobol_output.S1
@@ -75,8 +60,8 @@ for i in 1:length(yrs)
         insertcols!(second_order_df, 1, :parameter => param_names)
         insertcols!(second_CI_df, 1, :parameter => param_names)
         # save the results to csv files
-        save(joinpath(@__DIR__, "..", "results", "sa_results", "$output_dir", "second_order", "sens_$current_yr.csv"), second_order_df)
-        save(joinpath(@__DIR__, "..", "results", "sa_results", "$output_dir", "second_order", "CI_$current_yr.csv"), second_CI_df)
+        save(joinpath(@__DIR__, "..", "results", "gsa_results", "$output_dir", "second_order", "sens_$current_yr.csv"), second_order_df)
+        save(joinpath(@__DIR__, "..", "results", "gsa_results", "$output_dir", "second_order", "CI_$current_yr.csv"), second_CI_df)
     end
 
 end
@@ -94,7 +79,7 @@ insertcols!(total_order_df, 1, :parameter => param_names)
 insertcols!(total_CI_df, 1, :parameter => param_names)
 
 # save the results to csv files
-save(joinpath(@__DIR__, "..", "results", "sa_results", "$output_dir", "first_order.csv"), first_order_df)
-save(joinpath(@__DIR__, "..", "results", "sa_results", "$output_dir", "first_CI.csv"), first_CI_df)
-save(joinpath(@__DIR__, "..", "results", "sa_results", "$output_dir", "total_order.csv"), total_order_df)
-save(joinpath(@__DIR__, "..", "results", "sa_results", "$output_dir", "total_CI.csv"), total_CI_df)
+save(joinpath(@__DIR__, "..", "results", "gsa_results", "$output_dir", "first_order.csv"), first_order_df)
+save(joinpath(@__DIR__, "..", "results", "gsa_results", "$output_dir", "first_CI.csv"), first_CI_df)
+save(joinpath(@__DIR__, "..", "results", "gsa_results", "$output_dir", "total_order.csv"), total_order_df)
+save(joinpath(@__DIR__, "..", "results", "gsa_results", "$output_dir", "total_CI.csv"), total_CI_df)
