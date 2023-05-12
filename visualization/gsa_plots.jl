@@ -15,11 +15,9 @@ first_CI    = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", 
 total_order = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$output_dir", "total_order.csv")))
 total_CI    = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$output_dir", "total_CI.csv")))
 
-# change negative values to zero
-first_order[:,2:end]    .= ifelse.(first_order[:,2:end] .< 0, 0, first_order[:,2:end])
-first_CI[:,2:end]       .= ifelse.(first_CI[:,2:end] .< 0, 0, first_CI[:,2:end])
-total_order[:,2:end]    .= ifelse.(total_order[:,2:end] .< 0, 0, total_order[:,2:end])
-total_CI[:,2:end]       .= ifelse.(total_CI[:,2:end] .< 0, 0, total_CI[:,2:end])
+# treat negative sensitivities as zero
+first_order[:,2:end] .= ifelse.(first_order[:,2:end] .< 0, 0, first_order[:,2:end])
+total_order[:,2:end] .= ifelse.(total_order[:,2:end] .< 0, 0, total_order[:,2:end])
 
 # -------------------------------------- Plot first order sensitivities --------------------------------------- #
 all_plts = []
