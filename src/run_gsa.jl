@@ -5,12 +5,11 @@ Pkg.instantiate()
 using GlobalSensitivity
 include("gsa_functions.jl")
 
-# define number of samples and number of bootstrap samples
-n_samples = 10_000 # must be less than or equal to number of rows in A/B
-n_boot = 1_000 # one order of magnitude below n_samples
+# define number of bootstrap samples
+n_boot = 1000 # one order of magnitude below number of samples
 
 # specify directory to store results
-output_dir = "default"
+output_dir = "10_000_redo"
 
 # intialize values for years to analyze in sensitivity analysis
 gsa_first_yr = 2030 # don't need to analyze historical data
@@ -20,8 +19,8 @@ gsa_last_yr = 2300
 yrs = collect(gsa_first_yr:10:gsa_last_yr)
 
 # read in the design matrices A and B
-A = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "sobol_input_A.csv")))
-B = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "sobol_input_B.csv")))
+A = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$output_dir", "sobol_input_A.csv")))
+B = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$output_dir", "sobol_input_B.csv")))
 
 #initialize values
 n_params = size(A,2)
@@ -40,7 +39,7 @@ for i in 1:length(yrs)
 
     current_yr = yrs[i]
     # conduct global sensitivity analysis
-    sobol_output = gsa(M -> brick_run(M; yr=current_yr), Sobol(order=[0,1,2], nboot=n_boot), transpose(Matrix(A)[1:n_samples,:]), transpose(Matrix(B)[1:n_samples,:]), batch=true)
+    sobol_output = gsa(M -> brick_run(M; yr=current_yr), Sobol(order=[0,1,2], nboot=n_boot), transpose(Matrix(A)), transpose(Matrix(B)), batch=true)
 
     # store first and total order sensitivities and confidence intervals
     first_order[:,i] = sobol_output.S1

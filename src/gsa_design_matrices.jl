@@ -7,7 +7,8 @@ using QuasiMonteCarlo
 include("gsa_functions.jl")
 
 Random.seed!(1)
-n_samples = 100_000 # define size of ensemble
+n_samples = 10_000 # define size of ensemble
+output_dir = "10_000_redo"
 
 #----------------------------------------------- Create design matrices A1 and B1 (for emissions parameters) ------------------------------------------------------------------------------------#
 
@@ -22,6 +23,11 @@ A1,B1 = QuasiMonteCarlo.generate_design_matrices(n_samples, lb, ub, SobolSample(
 γ_g_dist     = truncated(Normal(0.004,0.0075), 0.001, Inf)  # growth parameter
 t_peak_dist  = truncated(Normal(2070,25), 2030, 2200)       # peaking time
 γ_d_dist     = truncated(Normal(0.07,0.05), 0.001, 0.2)     # decline parameter
+
+# stratefied sensitivity analysis runs
+#t_peak_dist  = truncated(Normal(2070,25), 2030, 2050)       # early peaking time (before 2050)
+#t_peak_dist  = truncated(Normal(2070,25), 2050, 2100)       # middle peaking time (2050-2100)
+#t_peak_dist  = truncated(Normal(2070,25), 2100, 2200)       # late peaking time (after 2100)
 
 # combine emissions parmaters' distributions into a matrix
 emissions_dist = hcat(γ_g_dist, t_peak_dist, γ_d_dist)
@@ -90,5 +96,5 @@ A_df[!, :lw_random_sample] = rand(Normal(0.0003, 0.00018), n_samples)
 B_df[!, :lw_random_sample] = rand(Normal(0.0003, 0.00018), n_samples)
 
 # write A and B design matrices to .csv files (each with size n_samples x n_params)
-save(joinpath(@__DIR__, "..", "results", "sa_results", "sobol_input_A.csv"), A_df)
-save(joinpath(@__DIR__, "..", "results", "sa_results", "sobol_input_B.csv"), B_df)
+save(joinpath(@__DIR__, "..", "results", "gsa_results", "$output_dir", "sobol_input_A.csv"), A_df)
+save(joinpath(@__DIR__, "..", "results", "gsa_results", "$output_dir", "sobol_input_B.csv"), B_df)
