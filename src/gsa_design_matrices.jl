@@ -44,12 +44,14 @@ B1[2,:] = trunc.(Int64, B1[2,:])
 
 #----------------------------------------------- Create design matrices A2 and B2 (for Earth system parameters) ----------------------------------------------------------------------#
 
-# read in full chain MCMC parameters (20 million samples)
-mcmc_params = DataFrame(load(joinpath(@__DIR__, "..", "data", "calibrated_parameters", "parameters_full_chain_sneasybrick.csv"))) # read in full chain
+# read in subsample of MCMC parameters (10,000 samples)
+mcmc_params = DataFrame(load(joinpath(@__DIR__, "..", "data", "calibrated_parameters", "parameters_subsample_sneasybrick.csv"))) # read in subsample
 
-# remove the first 5 million samples to discard the burn-in period
+#= read in full chain MCMC parameters (20 million samples)
+mcmc_params = DataFrame(load(joinpath(@__DIR__, "..", "data", "calibrated_parameters", "parameters_full_chain_sneasybrick.csv"))) # read in full chain
+# remove the first 5 million samples to discard the burn-in period (only do this for full chain, not subsample)
 burn_in = 5_000_000
-mcmc_params = mcmc_params[burn_in+1:end, :] # keeps all rows after specified burn-in
+mcmc_params = mcmc_params[burn_in+1:end, :] # keeps all rows after specified burn-in =#
 
 # get max and min values for each posterior distribution's samples
 bounds = [mapslices(extrema, Matrix(mcmc_params), dims=1)...] # produces a vector of tuples with min/max values for each parameter
