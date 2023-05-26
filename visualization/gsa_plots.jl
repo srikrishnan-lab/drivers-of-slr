@@ -7,7 +7,7 @@ Pkg.instantiate()
 using Plots, Measures
 include("../src/functions.jl")
 
-output_dir = "10_000_redo"
+output_dir = "default"
 
 # read in results
 first_order = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$output_dir", "first_order.csv")))
@@ -23,20 +23,17 @@ total_order[:,2:end] .= ifelse.(total_order[:,2:end] .< 0, 0, total_order[:,2:en
 
 # create groups for color scheme in plots
 groups = Dict("Emissions"           => ["gamma_g", "t_peak", "gamma_d"],
-              "Statistical Noise"   => ["sd_temp", "sd_ocean_heat", "sd_glaciers", "sd_greenland", "sd_antarctic",
-                                        "sd_gmsl", "rho_temperature", "rho_ocean_heat", "rho_glaciers", "rho_greenland",
-                                        "rho_antarctic", "rho_gmsl"],
-              "Climate System"      => ["CO2_0", "N2O_0", "temperature_0", "ocean_heat_0", "heat_diffusivity",
-                                        "rf_scale_aerosol", "climate_sensitivity"],
-              "Carbon Cycle"        => ["Q10", "CO2_fertilization", "CO2_diffusivity"],
+              "Statistical Noise"   => ["sd_temp", "sd_ocean_heat", "sd_glaciers", "sd_greenland", "sd_antarctic", "sd_gmsl",
+                                        "rho_temperature", "rho_ocean_heat", "rho_glaciers", "rho_greenland", "rho_antarctic", "rho_gmsl"],
+              "Climate System"      => ["temperature_0", "ocean_heat_0", "heat_diffusivity", "rf_scale_aerosol", "climate_sensitivity"],
+              "Carbon Cycle"        => ["CO2_0", "N2O_0", "Q10", "CO2_fertilization", "CO2_diffusivity"],
               "Thermal Expansion"   => ["thermal_alpha", "thermal_s0"],
-              "Greenland Ice Sheet" => ["greenland_a", "greenland_b", "greenland_alpha", "greenland_beta", "greenland_v0"],
+              "Greenland"           => ["greenland_a", "greenland_b", "greenland_alpha", "greenland_beta", "greenland_v0"],
               "Glaciers and SIC"    => ["glaciers_beta0", "glaciers_n", "glaciers_v0", "glaciers_s0"],
-              "Antarctic Ocean"     => ["anto_alpha", "anto_beta"],
-              "Antarctic Ice Sheet" => ["antarctic_s0", "antarctic_gamma", "antarctic_alpha", "antarctic_mu", "antarctic_nu",
+              "Antarctic"           => ["antarctic_s0", "antarctic_gamma", "antarctic_alpha", "antarctic_mu", "antarctic_nu",
                                         "antarctic_precip0", "antarctic_kappa", "antarctic_flow0", "antarctic_runoff_height0",
                                         "antarctic_c", "antarctic_bed_height0", "antarctic_slope", "antarctic_lambda",
-                                        "antarctic_temp_threshold"],
+                                        "antarctic_temp_threshold", "anto_alpha", "anto_beta"],
               "Land Water Storage"  => ["lw_random_sample"])
 
 # preallocate space for new column of parameter groupings
