@@ -3,12 +3,11 @@ Pkg.activate(joinpath(@__DIR__, ".."))
 Pkg.instantiate()
 
 using QuasiMonteCarlo
-
 include("gsa_functions.jl")
 
 Random.seed!(1)
 n_samples = 10_000 # define size of ensemble
-output_dir = "10_000_redo"
+output_dir = "default"
 
 #----------------------------------------------- Create design matrices A1 and B1 (for emissions parameters) ------------------------------------------------------------------------------------#
 
@@ -47,12 +46,6 @@ B1[2,:] = trunc.(Int64, B1[2,:])
 # read in subsample of MCMC parameters (10,000 samples)
 mcmc_params = DataFrame(load(joinpath(@__DIR__, "..", "data", "calibrated_parameters", "parameters_subsample_sneasybrick.csv"))) # read in subsample
 
-#= read in full chain MCMC parameters (20 million samples)
-mcmc_params = DataFrame(load(joinpath(@__DIR__, "..", "data", "calibrated_parameters", "parameters_full_chain_sneasybrick.csv"))) # read in full chain
-# remove the first 5 million samples to discard the burn-in period (only do this for full chain, not subsample)
-burn_in = 5_000_000
-mcmc_params = mcmc_params[burn_in+1:end, :] # keeps all rows after specified burn-in =#
-
 # get max and min values for each posterior distribution's samples
 bounds = [mapslices(extrema, Matrix(mcmc_params), dims=1)...] # produces a vector of tuples with min/max values for each parameter
 
@@ -64,14 +57,12 @@ n_params = size(mcmc_params,2)
 A2 = zeros(n_samples, n_params)
 B2 = zeros(n_samples, n_params)
 
-# sample MCMC indices
-A2_idx = rand(1:size(mcmc_params,1), n_samples)
-B2_idx = rand(1:size(mcmc_params,1), n_samples)
-
 # sample values for each parameter to create A2 and B2 matrices
 for i in 1:n_params
-    A2[:,i] = sample_value(n_samples=n_samples, param_vals=mcmc_params[A2_idx[i], i], bw=bandwidth[i], bounds=bounds[i])
-    B2[:,i] = sample_value(n_samples=n_samples, param_vals=mcmc_params[B2_idx[i], i], bw=bandwidth[i], bounds=bounds[i])
+    for j in 1:n_samples
+        A2[j,i] = sample_value(param_val=mcmc_params[j,i], bw=bandwidth[i], bounds=bounds[i])
+        B2[j,i] = sample_value(param_val=mcmc_params[j,i], bw=bandwidth[i], bounds=bounds[i])
+    end
 end
 
 #----------------------------------------------- Concatenate design matrices A1 & A2, and B1 & B2 ------------------------------------------------------------------------------------#

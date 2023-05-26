@@ -15,11 +15,11 @@ end
 
 # -------------------------------------------------------------------------------------------------------------------------------------------- #
 
-# function that samples from a Gaussian distribution near parameter values
-function sample_value(;n_samples, param_vals, bw, bounds)
-    # sample n_samples from a truncated Normal distribution with mean of param_vals and stdev of bw, staying inside specified bounds
-    samples = rand(truncated(Normal(param_vals, bw), first(bounds), last(bounds)), n_samples)
-    return samples
+# function that samples from a Gaussian distribution near a parameter value
+function sample_value(;param_val, bw, bounds)
+    # one sample from a truncated Normal distribution with mean of param_val and stdev of bw, staying inside specified bounds
+    sample = rand(truncated(Normal(param_val, bw), first(bounds), last(bounds)))
+    return sample
 end
 
 # -------------------------------------------------------------------------------------------------------------------------------------------- #
