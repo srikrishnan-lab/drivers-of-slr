@@ -1,14 +1,7 @@
-using Random
 using Mimi
 using MimiSNEASY
 using MimiBRICK
-using DataFrames
-using Impute
-using Dates
-using Distributions
 using DataStructures
-using XLSX
-using CSVFiles
 
 include("functions.jl")
 Random.seed!(1)

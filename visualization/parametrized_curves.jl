@@ -6,7 +6,6 @@ Pkg.instantiate()
 
 using Plots
 using Polynomials
-using Random
 include("../src/functions.jl")
 
 # ------------------------------------------- Create baseline curve for a likely emissions trajectory --------------------------------------------- #
