@@ -7,7 +7,9 @@ Pkg.instantiate()
 using Plots, Measures
 include("../src/functions.jl")
 
+# initialization
 output_dir = "default"
+years = ["2100", "2200", "2300"]
 
 # read in results
 first_order = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$output_dir", "first_order.csv")))
@@ -51,9 +53,43 @@ end
 insertcols!(first_order, 1, :group => groups_col)
 insertcols!(total_order, 1, :group => groups_col)
 
-# -------------------------------------- Plot first order sensitivities --------------------------------------- #
+# ---------------------------- Plot stacked area plots for stratefied sensitivity analysis -------------------- #
+
+# create df with sums of first order sensitivities for each group for each year
+group_sums = combine(groupby(first_order, :group), names(first_order, Not([:group, :parameter])) .=> sum, renamecols=false)
+group_sums[:,2:end] .= ifelse.(group_sums[:,2:end] .< 0, 0, group_sums[:,2:end]) # treat negative sensitivities as zero for each group
+
+# sum of first order sensitivities for each year
+totals_df = combine(group_sums, Not(:group) .=> sum; renamecols=false)
+
+# define labels for plotting
+group_names = unique(first_order.group)
+group_sums = zeros(length(group_names), length(years))
+
+# sum the first order sensitivites for each group
+for (i, item) in enumerate(group_names)
+    for (j, year) in enumerate(years)
+        group_sums[i,j] = sum(first_order[first_order.group .== item, "$year"])
+    end
+end
+
+sums_df = DataFrame(group_sums, collect(years))
+sum(eachrow(sums_df))
+insertcols!(sums_df, 1, :group => group_names)
+
+# create a stacked area plot for contributors to first order sensitivity
+fig1 = plot(title="Low Emissions", xlabel="Year", ylabel="First Order Sensitivity")
+# create a matrix of sea level rise contributors
+slr_contributions_low = [collect(antarctic_low[1,:])';
+                         collect(gsic_low[1,:])';
+                         collect(greenland_low[1,:])';
+                         collect(lw_low[1,:])';
+                         collect(te_low[1,:])']
+areaplot!(years, slr_contributions_low', label=labels, color_palette=:darkrainbow, alpha=1, fillalpha=0.5)
+plot!(years, collect(gmslr_low[1,:]), label="GMSLR", color=:black, linewidth=4, linestyle=:dash)
+
+# ---------------------------- Plot first order sensitivities ------------------------------------------------- #
 all_plts = []
-years = ["2100", "2200", "2300"]
 
 for year in years
     plt = scatter(first_order.parameter, first_order[:,"$year"], yerror = first_CI[:,"$year"], 
@@ -67,11 +103,10 @@ end
 
 p = plot(all_plts..., plot_title="First Order Sensitivities", layout=(3,1), size=(900,1200))
 display(p)
-#savefig(p, "/Users/ced227/Desktop/plots/first_order.pdf")
+#savefig(p, "/Users/ced227/Desktop/plots/stratefied_gsa/late_first_order.pdf")
 
-# -------------------------------------- Plot total order sensitivities --------------------------------------- #
+# ---------------------------- Plot total order sensitivities ------------------------------------------------- #
 all_plts = []
-years = ["2100", "2200", "2300"]
 
 for year in years
     plt = scatter(total_order.parameter, total_order[:,"$year"], yerror = total_CI[:,"$year"], 
@@ -85,4 +120,4 @@ end
 
 p = plot(all_plts..., plot_title="Total Order Sensitivities", layout=(3,1), size=(900,1200))
 display(p)
-#savefig(p, "/Users/ced227/Desktop/plots/total_order.pdf")
+#savefig(p, "/Users/ced227/Desktop/plots/stratefied_gsa/late_total_order.pdf")
