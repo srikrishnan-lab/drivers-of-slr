@@ -68,28 +68,28 @@ for (i, item) in enumerate(gsa_runs) # loop through each run
     gsa_first = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$current_run", "first_order.csv")))
     
     # add a column for parameter groups
-    groups_col = Array{String}(undef, length(gsa_first.parameter)) # preallocate space
+    group_col = Array{String}(undef, length(gsa_first.parameter)) # preallocate space
     for (key,value) in groups # loop through dictionary
         indices = findall((in)(value), gsa_first.parameter) # find indices for current group
-        groups_col[indices] .= key # fill the indices with the name of current group
+        group_col[indices] .= key # fill the indices with the name of current group
     end
-    insertcols!(gsa_first, 1, :group => groups_col) # add the column
+    insertcols!(gsa_first, 1, :group => group_col) # add the column
 
     # create df with sums of first order sensitivities for each group for each year
     group_sums = combine(groupby(gsa_first, :group), names(gsa_first, Not([:group, :parameter])) .=> sum, renamecols=false)
     group_sums[:,2:end] .= ifelse.(group_sums[:,2:end] .< 0, 0, group_sums[:,2:end]) # treat negative sensitivities as zero for each group
     group_sums = group_sums[[8,3,4,1,7,6,9,2,5], :] # reorder rows for consistent color scheme
 
-    # sum of first order sensitivities for each year
+    # sum of first order sensitivities for each year (for reference)
     totals_df = combine(group_sums, Not(:group) .=> sum; renamecols=false) # shows sum for all groups
 
     # intialize years and labels for legend
-    years = parse.(Int64, names(group_sums)[2:end]) # years (x-axis)
+    all_years = parse.(Int64, names(group_sums)[2:end]) # years (x-axis)
     labels = permutedims(vcat(group_sums.group)) # group names
 
     # create a stacked area plot for contributors to first order sensitivity
     plt = plot(title=titles[i], xlabel="Year", ylabel="First Order Index", bottom_margin=7mm, left_margin=5mm)
-    areaplot!(years, Matrix(group_sums[:,2:end])', label=labels, palette=:tab10, alpha=1, fillalpha=0.7, legendfontsize=6)
+    areaplot!(all_years, Matrix(group_sums[:,2:end])', label=labels, palette=:tab10, alpha=1, fillalpha=0.7, legendfontsize=6)
     push!(all_plts, plt) # add current plot to array
 end
 
@@ -167,9 +167,9 @@ for (i, year) in enumerate(years) # loop through years considered
     second_order[:,2:end] .= ifelse.(second_order[:,2:end] .< 0, 0, second_order[:,2:end])
 
     for (j, pair) in enumerate(param_pairs) # loop through parameter pairs
+        # separate pair into two parameters
         param1 = pair[1]
         param2 = pair[2]
-        println(param1, "  ", param2)
         # get second order index
         gsa_value = second_order[(second_order.parameter .== "$param1"), "$param2"][1]
         # get the 95% confidence interval
@@ -177,7 +177,7 @@ for (i, year) in enumerate(years) # loop through years considered
         lower_bound = gsa_value - margin_of_error
         upper_bound = gsa_value + margin_of_error
         # add in second order index and confidence interval to tables
-        table[j,i]    = gsa_value
+        table[j,i]        = gsa_value
         lower_bounds[j,i] = lower_bound
         upper_bounds[j,i] = upper_bound
     end
