@@ -11,11 +11,11 @@ include("../src/functions.jl")
 output_dir = "default"
 years = ["2100", "2200", "2300"]
 
-# read in results
-first_order = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$output_dir", "first_order.csv")))
-first_CI    = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$output_dir", "first_CI.csv")))
-total_order = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$output_dir", "total_order.csv")))
-total_CI    = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$output_dir", "total_CI.csv")))
+# read in first and total order results
+first_order  = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$output_dir", "first_order.csv")))
+first_CI     = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$output_dir", "first_CI.csv")))
+total_order  = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$output_dir", "total_order.csv")))
+total_CI     = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$output_dir", "total_CI.csv")))
 
 # treat negative sensitivities as zero
 first_order[:,2:end] .= ifelse.(first_order[:,2:end] .< 0, 0, first_order[:,2:end])
@@ -54,39 +54,44 @@ insertcols!(first_order, 1, :group => groups_col)
 insertcols!(total_order, 1, :group => groups_col)
 
 # ---------------------------- Plot stacked area plots for stratefied sensitivity analysis -------------------- #
+all_plts = []
+gsa_runs = ["default", "early", "middle", "middle"]
+titles = ["Full Ensemble", "Early Peaking", "Middle Peaking", "UPDATE THIS TO LATE (currently middle)"]
 
-# create df with sums of first order sensitivities for each group for each year
-group_sums = combine(groupby(first_order, :group), names(first_order, Not([:group, :parameter])) .=> sum, renamecols=false)
-group_sums[:,2:end] .= ifelse.(group_sums[:,2:end] .< 0, 0, group_sums[:,2:end]) # treat negative sensitivities as zero for each group
-
-# sum of first order sensitivities for each year
-totals_df = combine(group_sums, Not(:group) .=> sum; renamecols=false)
-
-# define labels for plotting
-group_names = unique(first_order.group)
-group_sums = zeros(length(group_names), length(years))
-
-# sum the first order sensitivites for each group
-for (i, item) in enumerate(group_names)
-    for (j, year) in enumerate(years)
-        group_sums[i,j] = sum(first_order[first_order.group .== item, "$year"])
+for (i, item) in enumerate(gsa_runs) # loop through each run
+    # read in first order results for current run
+    current_run = gsa_runs[i]
+    gsa_first = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$current_run", "first_order.csv")))
+    
+    # add a column for parameter groups
+    groups_col = Array{String}(undef, length(gsa_first.parameter)) # preallocate space
+    for (key,value) in groups # loop through dictionary
+        indices = findall((in)(value), gsa_first.parameter) # find indices for current group
+        groups_col[indices] .= key # fill the indices with the name of current group
     end
+    insertcols!(gsa_first, 1, :group => groups_col) # add the column
+
+    # create df with sums of first order sensitivities for each group for each year
+    group_sums = combine(groupby(gsa_first, :group), names(gsa_first, Not([:group, :parameter])) .=> sum, renamecols=false)
+    group_sums[:,2:end] .= ifelse.(group_sums[:,2:end] .< 0, 0, group_sums[:,2:end]) # treat negative sensitivities as zero for each group
+    group_sums = group_sums[[8,3,4,1,7,6,9,2,5], :] # reorder rows for consistent color scheme
+
+    # sum of first order sensitivities for each year
+    totals_df = combine(group_sums, Not(:group) .=> sum; renamecols=false) # shows sum for all groups
+
+    # intialize years and labels for legend
+    years = parse.(Int64, names(group_sums)[2:end]) # years (x-axis)
+    labels = permutedims(vcat(group_sums.group)) # group names
+
+    # create a stacked area plot for contributors to first order sensitivity
+    plt = plot(title=titles[i], xlabel="Year", ylabel="First Order Index", bottom_margin=7mm, left_margin=5mm)
+    areaplot!(years, Matrix(group_sums[:,2:end])', label=labels, palette=:tab10, alpha=1, fillalpha=0.7, legendfontsize=6)
+    push!(all_plts, plt) # add current plot to array
 end
 
-sums_df = DataFrame(group_sums, collect(years))
-sum(eachrow(sums_df))
-insertcols!(sums_df, 1, :group => group_names)
-
-# create a stacked area plot for contributors to first order sensitivity
-fig1 = plot(title="Low Emissions", xlabel="Year", ylabel="First Order Sensitivity")
-# create a matrix of sea level rise contributors
-slr_contributions_low = [collect(antarctic_low[1,:])';
-                         collect(gsic_low[1,:])';
-                         collect(greenland_low[1,:])';
-                         collect(lw_low[1,:])';
-                         collect(te_low[1,:])']
-areaplot!(years, slr_contributions_low', label=labels, color_palette=:darkrainbow, alpha=1, fillalpha=0.5)
-plot!(years, collect(gmslr_low[1,:]), label="GMSLR", color=:black, linewidth=4, linestyle=:dash)
+p = plot(all_plts..., plot_title="First Order Sensitivity Stacked Area Plots", layout=(2,2), size=(1200,900))
+display(p)
+#savefig(p, "/Users/ced227/Desktop/plots/stacked_area.pdf")
 
 # ---------------------------- Plot first order sensitivities ------------------------------------------------- #
 all_plts = []
@@ -121,3 +126,70 @@ end
 p = plot(all_plts..., plot_title="Total Order Sensitivities", layout=(3,1), size=(900,1200))
 display(p)
 #savefig(p, "/Users/ced227/Desktop/plots/stratefied_gsa/late_total_order.pdf")
+
+# ---------------------------- Table of second order sensitivities -------------------------------------------- #
+
+# vector of tuples with parameter pairs we want to consider
+param_pairs = [("gamma_g","t_peak"),
+            ("t_peak","gamma_d"),
+            ("gamma_d","sd_glaciers"), 
+            ("gamma_d","rho_ocean_heat"),
+            ("gamma_d","rho_gmsl"),
+            ("gamma_d","greenland_v0"),
+            ("gamma_d","Q10"),
+            ("gamma_d","CO2_fertilization"),
+            ("gamma_d","CO2_diffusivity"),
+            ("gamma_d","anto_alpha"),
+            ("gamma_d","anto_beta"),
+            ("gamma_d","antarctic_c"),
+            ("gamma_d","antarctic_mu"),
+            ("gamma_d","antarctic_precip0"),
+            ("gamma_d","antarctic_runoff_height0"),
+            ("gamma_d","antarctic_bed_height0"),
+            ("gamma_d","antarctic_lambda"),
+            ("gamma_d","antarctic_alpha"),
+            ("gamma_d","lw_random_sample")]
+
+# preallocate storage for indices and confidence intervals
+table = Matrix{Any}(undef, length(param_pairs), length(years))
+lower_bounds = Matrix{Any}(undef, length(param_pairs), length(years))
+upper_bounds = Matrix{Any}(undef, length(param_pairs), length(years))
+
+for (i, year) in enumerate(years) # loop through years considered
+    # get results for current year
+    second_order = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "default", "second_order", "sens_$year.csv")))
+    second_CI    = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "default", "second_order", "CI_$year.csv")))
+    # treat negative sensitivities as zero
+    second_order[:,2:end] .= ifelse.(second_order[:,2:end] .< 0, 0, second_order[:,2:end])
+
+    for (j, pair) in enumerate(param_pairs) # loop through parameter pairs
+        param1 = pair[1]
+        param2 = pair[2]
+        println(param1, "  ", param2)
+        # get second order index
+        gsa_value = second_order[(second_order.parameter .== "$param1"), "$param2"][1]
+        # get the 95% confidence interval
+        margin_of_error = second_CI[(second_CI.parameter .== "$param1"), "$param2"][1] # get margin of error from results
+        lower_bound = gsa_value - margin_of_error
+        upper_bound = gsa_value + margin_of_error
+        # add in second order index and confidence interval to tables
+        table[j,i]    = gsa_value
+        lower_bounds[j,i] = lower_bound
+        upper_bounds[j,i] = upper_bound
+    end
+end
+
+# convert each Matrix to DataFrame
+table_df = DataFrame(table, years)
+lower_bounds_df = DataFrame(lower_bounds, years)
+upper_bounds_df = DataFrame(upper_bounds, years)
+
+# add columns to each df for clarity
+dfs = [table_df, lower_bounds_df, upper_bounds_df]
+for df in dfs
+    insertcols!(df, 1, :"Parameter 1" => first.(param_pairs)) # parameter 1 column
+    insertcols!(df, 2, :"Parameter 2" => last.(param_pairs)) # parameter 2 column
+end
+
+# save to Excel workbook, with each df as a separate sheet
+#XLSX.writetable("/Users/ced227/Desktop/plots/second_order.xlsx", "estimate" => table_df, "lower_bounds" => lower_bounds_df, "upper_bounds" => upper_bounds_df)
