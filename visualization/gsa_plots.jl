@@ -1,4 +1,8 @@
-# this script plots the results from the Global Sensitivity Analysis
+#= this script creates 3 plots and 1 .xlsx file showing the results from the Global Sensitivity Analysis:
+Plot 1: 4-panel stacked area plot (one for each run) showing how the contributors to first order sensitivity change over time
+Plot 2: 3-panel scatterplot (showing 3 years) that shows the first order sensitivity indices for each parameter for a specified run 
+Plot 3: same as Plot 2, except for total order sensitivities
+The last result is an .xlsx file with tables that show selected parameter interactions for 3 years: 2100, 2200, and 2300 =#
 
 using Pkg
 Pkg.activate(joinpath(@__DIR__, ".."))
@@ -8,14 +12,14 @@ using Plots, Measures
 include("../src/functions.jl")
 
 # initialization
-output_dir = "default"
+run_name = "default" # choose from "default", "early", "middle", or "late"
 years = ["2100", "2200", "2300"]
 
 # read in first and total order results
-first_order  = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$output_dir", "first_order.csv")))
-first_CI     = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$output_dir", "first_CI.csv")))
-total_order  = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$output_dir", "total_order.csv")))
-total_CI     = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$output_dir", "total_CI.csv")))
+first_order  = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$run_name", "first_order.csv")))
+first_CI     = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$run_name", "first_CI.csv")))
+total_order  = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$run_name", "total_order.csv")))
+total_CI     = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$run_name", "total_CI.csv")))
 
 # treat negative sensitivities as zero
 first_order[:,2:end] .= ifelse.(first_order[:,2:end] .< 0, 0, first_order[:,2:end])
