@@ -12,7 +12,7 @@ using Plots, Measures
 include("../src/functions.jl")
 
 # initialization
-run_name = "default" # choose from "default", "early", "middle", or "late"
+run_name = "late" # choose from "default", "early", "middle", or "late"
 years = ["2100", "2200", "2300"]
 
 # read in first and total order results
@@ -57,10 +57,47 @@ end
 insertcols!(first_order, 1, :group => groups_col)
 insertcols!(total_order, 1, :group => groups_col)
 
-# ---------------------------- Plot stacked area plots for stratefied sensitivity analysis -------------------- #
+# ---------------------------- Plot first order sensitivities ------------------------------------------------- #
+# plots for the run specified in "run_name"
 all_plts = []
-gsa_runs = ["default", "early", "middle", "middle"]
-titles = ["Full Ensemble", "Early Peaking", "Middle Peaking", "UPDATE THIS TO LATE (currently middle)"]
+
+for year in years
+    plt = scatter(first_order.parameter, first_order[:,"$year"], yerror = first_CI[:,"$year"], 
+                  group=first_order.group, palette=:tab10, xticks=:all, xrotation=45,
+                  title = "$year", xlabel="Parameter", ylabel="Sensitivity", legend=:true,
+                  markersize=5, markerstrokewidth=0.5, tickfontsize=6, legendfontsize=6,
+                  bottom_margin=7mm, left_margin=5mm)
+    push!(all_plts, plt)
+end
+#ylim=(-0.03,0.82), yticks=0:0.1:0.8,
+
+p = plot(all_plts..., plot_title="First Order Sensitivities", layout=(3,1), size=(900,1200))
+display(p)
+#savefig(p, "/Users/ced227/Desktop/plots/stratefied_gsa/UPDATE_first_order.pdf")
+
+# ---------------------------- Plot total order sensitivities ------------------------------------------------- #
+# plots for the run specified in "run_name"
+all_plts = []
+
+for year in years
+    plt = scatter(total_order.parameter, total_order[:,"$year"], yerror = total_CI[:,"$year"], 
+                  group=total_order.group, palette=:tab10, xticks=:all, xrotation=45,
+                  title = "$year", xlabel="Parameter", ylabel="Sensitivity", legend=:true,
+                  markersize=5, markerstrokewidth=0.5, tickfontsize=6, legendfontsize=6,
+                  bottom_margin=7mm, left_margin=5mm)
+    push!(all_plts, plt)
+end
+#ylim=(-0.02,0.62), yticks=0:0.1:0.6,
+
+p = plot(all_plts..., plot_title="Total Order Sensitivities", layout=(3,1), size=(900,1200))
+display(p)
+#savefig(p, "/Users/ced227/Desktop/plots/stratefied_gsa/UPDATE_total_order.pdf")
+
+# ---------------------------- Plot stacked area plots for stratefied sensitivity analysis -------------------- #
+# plots for all runs: default, early, middle, and late
+all_plts = []
+gsa_runs = ["default", "early", "middle", "late"]
+titles = ["Full Ensemble", "Early Peaking", "Middle Peaking", "Late Peaking"]
 
 for (i, item) in enumerate(gsa_runs) # loop through each run
     # read in first order results for current run
@@ -80,10 +117,7 @@ for (i, item) in enumerate(gsa_runs) # loop through each run
     group_sums[:,2:end] .= ifelse.(group_sums[:,2:end] .< 0, 0, group_sums[:,2:end]) # treat negative sensitivities as zero for each group
     group_sums = group_sums[[8,3,4,1,7,6,9,2,5], :] # reorder rows for consistent color scheme
 
-    # sum of first order sensitivities for each year (for reference)
-    totals_df = combine(group_sums, Not(:group) .=> sum; renamecols=false) # shows sum for all groups
-
-    # intialize years and labels for legend
+    # intialize years and legend labels
     all_years = parse.(Int64, names(group_sums)[2:end]) # years (x-axis)
     labels = permutedims(vcat(group_sums.group)) # group names
 
@@ -97,44 +131,10 @@ p = plot(all_plts..., plot_title="First Order Sensitivity Stacked Area Plots", l
 display(p)
 #savefig(p, "/Users/ced227/Desktop/plots/stacked_area.pdf")
 
-# ---------------------------- Plot first order sensitivities ------------------------------------------------- #
-all_plts = []
+# ---------------------------- Tables of second order sensitivities -------------------------------------------- #
+# plots for the "default" run
 
-for year in years
-    plt = scatter(first_order.parameter, first_order[:,"$year"], yerror = first_CI[:,"$year"], 
-                  group=first_order.group, palette=:tab10, xticks=:all, xrotation=45,
-                  title = "$year", xlabel="Parameter", ylabel="Sensitivity", legend=:true,
-                  markersize=5, markerstrokewidth=0.5, tickfontsize=6, legendfontsize=6,
-                  bottom_margin=7mm, left_margin=5mm)
-    push!(all_plts, plt)
-end
-#ylim=(-0.03,0.82), yticks=0:0.1:0.8,
-
-p = plot(all_plts..., plot_title="First Order Sensitivities", layout=(3,1), size=(900,1200))
-display(p)
-#savefig(p, "/Users/ced227/Desktop/plots/stratefied_gsa/late_first_order.pdf")
-
-# ---------------------------- Plot total order sensitivities ------------------------------------------------- #
-all_plts = []
-
-for year in years
-    plt = scatter(total_order.parameter, total_order[:,"$year"], yerror = total_CI[:,"$year"], 
-                  group=total_order.group, palette=:tab10, xticks=:all, xrotation=45,
-                  title = "$year", xlabel="Parameter", ylabel="Sensitivity", legend=:true,
-                  markersize=5, markerstrokewidth=0.5, tickfontsize=6, legendfontsize=6,
-                  bottom_margin=7mm, left_margin=5mm)
-    push!(all_plts, plt)
-end
-#ylim=(-0.02,0.62), yticks=0:0.1:0.6,
-
-p = plot(all_plts..., plot_title="Total Order Sensitivities", layout=(3,1), size=(900,1200))
-display(p)
-#savefig(p, "/Users/ced227/Desktop/plots/stratefied_gsa/late_total_order.pdf")
-
-# ---------------------------- Table of second order sensitivities -------------------------------------------- #
-
-# vector of tuples with parameter pairs we want to consider
-param_pairs = [("gamma_g","t_peak"),
+param_pairs = [("gamma_g","t_peak"), # vector of tuples with parameter pairs we want to consider
             ("t_peak","gamma_d"),
             ("gamma_d","sd_glaciers"), 
             ("gamma_d","rho_ocean_heat"),
@@ -154,8 +154,8 @@ param_pairs = [("gamma_g","t_peak"),
             ("gamma_d","antarctic_alpha"),
             ("gamma_d","lw_random_sample")]
 
-# preallocate storage for indices and confidence intervals
-table = Matrix{Any}(undef, length(param_pairs), length(years))
+# preallocate storage for sensitivity indices and confidence interval bounds
+estimates    = Matrix{Any}(undef, length(param_pairs), length(years))
 lower_bounds = Matrix{Any}(undef, length(param_pairs), length(years))
 upper_bounds = Matrix{Any}(undef, length(param_pairs), length(years))
 
@@ -176,24 +176,24 @@ for (i, year) in enumerate(years) # loop through years considered
         margin_of_error = second_CI[(second_CI.parameter .== "$param1"), "$param2"][1] # get margin of error from results
         lower_bound = gsa_value - margin_of_error
         upper_bound = gsa_value + margin_of_error
-        # add in second order index and confidence interval to tables
-        table[j,i]        = gsa_value
+        # add in second order index and lower/upper bounds to matrices
+        estimates[j,i]    = gsa_value
         lower_bounds[j,i] = lower_bound
         upper_bounds[j,i] = upper_bound
     end
 end
 
 # convert each Matrix to DataFrame
-table_df = DataFrame(table, years)
+estimates_df    = DataFrame(estimates, years)
 lower_bounds_df = DataFrame(lower_bounds, years)
 upper_bounds_df = DataFrame(upper_bounds, years)
 
 # add columns to each df for clarity
-dfs = [table_df, lower_bounds_df, upper_bounds_df]
+dfs = [estimates_df, lower_bounds_df, upper_bounds_df]
 for df in dfs
     insertcols!(df, 1, :"Parameter 1" => first.(param_pairs)) # parameter 1 column
     insertcols!(df, 2, :"Parameter 2" => last.(param_pairs)) # parameter 2 column
 end
 
 # save to Excel workbook, with each df as a separate sheet
-#XLSX.writetable("/Users/ced227/Desktop/plots/second_order.xlsx", "estimate" => table_df, "lower_bounds" => lower_bounds_df, "upper_bounds" => upper_bounds_df)
+#XLSX.writetable("/Users/ced227/Desktop/plots/second_order.xlsx", "estimates" => estimates_df, "lower_bounds" => lower_bounds_df, "upper_bounds" => upper_bounds_df)
