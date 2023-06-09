@@ -1,3 +1,6 @@
+#= this script runs the workflow from (emissions -> SNEASY -> BRICK) and then saves results to .csv files
+Note: It takes about 25 minutes to run 10,000 samples with this script (number of rows in sobol_input_A.csv) =#
+
 # activate the environment
 using Pkg
 Pkg.activate(joinpath(@__DIR__, "..")) # this does the same thing: Pkg.activate("/Users/ced227/Documents/Repositories/drivers-of-sea-level-rise/")
@@ -9,7 +12,6 @@ using Mimi
 using MimiSNEASY
 using MimiBRICK
 using DataFrames
-using Impute
 using Dates
 using Distributions
 using DataStructures
@@ -21,12 +23,11 @@ include("functions.jl") # include functions from other scripts
 # initial set up
 Random.seed!(1)
 output_dir = "default"
-num_samples = 1000
 start_year = 1850
 end_year = 2300
 model_years = collect(start_year:end_year)
 num_years = length(model_years)
-num_params = 38
+num_params = 39
 
 # store dataframe with info for each RCP scenario for appropriate years (contains historical data from beginning-2005)
 RCP26 = scenario_df("RCP26")[in(model_years).(scenario_df("RCP26").year), :]
@@ -42,14 +43,9 @@ m = MimiBRICK.create_sneasy_brick(start_year=start_year, end_year=end_year) # 1 
 #run(m)
 #explore(m)
 
-# generate num_samples of parameter samples for emissions curves
-growth  = rand(truncated(Normal(0.004,0.0075), 0.001, Inf), num_samples)           # growth parameter
-peak    = trunc.(Int64, rand(truncated(Normal(2070,25), 2030, 2200), num_samples)) # peaking time
-decline = rand(truncated(Normal(0.07,0.05), 0.001, 0.2), num_samples)              # decline parameter
-# add in sampling for land water storage
-lw_storage =  rand(Normal(0.0003, 0.00018), num_samples, num_years)
-# read in ensemble of parameter samples for SNEASY-BRICK
-calibrated_params = DataFrame(load(joinpath(@__DIR__, "..", "data", "calibrated_parameters", "parameters_subsample_sneasybrick.csv"))) # read in subsample, not full chain
+# read in ensemble of parameter samples (design matrix)
+calibrated_params = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "default", "sobol_input_A.csv")))
+num_samples = nrow(calibrated_params)
 
 # pre-allocate arrays to store results
 parameters                  = zeros(Float64, num_samples, num_params)
@@ -70,9 +66,9 @@ for i = 1:num_samples
     # ----------------------------------------------- Create emissions curves with current set of samples --------------------------------------------------- #
 
     # isolate one set of samples and update parameters to those values
-    γ_g = growth[i]
-    t_peak = peak[i]
-    γ_d = decline[i]
+    γ_g     = calibrated_params[i,1]
+    t_peak  = calibrated_params[i,2]
+    γ_d     = calibrated_params[i,3]
 
     t, gtco2 = emissions_curve(historical_data, γ_g=γ_g, t_peak=t_peak, γ_d=γ_d) # years and emissions
     gtco2 ./= 3.67 # divide by 3.67 to convert GtCO₂/yr to GtC/yr (SNEASY needs input of GtC/yr)
@@ -94,61 +90,59 @@ for i = 1:num_samples
     # ---------------------------------------------------- Create and Update SNEASY-BRICK Parameters --------------------------------------------------------- #
 
     # create parameters
-    lw_random_sample            = lw_storage[i,:]           # land water storage sample
-    σ_temperature               = calibrated_params[i,1]    # statistical noise parameter
-    σ_ocean_heat                = calibrated_params[i,2]    # statistical noise parameter
-    σ_glaciers                  = calibrated_params[i,3]    # statistical noise parameter
-    σ_greenland                 = calibrated_params[i,4]    # statistical noise parameter
-    σ_antarctic                 = calibrated_params[i,5]    # statistical noise parameter
-    σ_gmsl                      = calibrated_params[i,6]    # statistical noise parameter
-    σ²_white_noise_CO₂          = calibrated_params[i,7]    # statistical noise parameter (will not use)
-    ρ_temperature               = calibrated_params[i,8]    # statistical noise parameter
-    ρ_ocean_heat                = calibrated_params[i,9]    # statistical noise parameter
-    ρ_glaciers                  = calibrated_params[i,10]   # statistical noise parameter
-    ρ_greenland                 = calibrated_params[i,11]   # statistical noise parameter
-    ρ_antarctic                 = calibrated_params[i,12]   # statistical noise parameter
-    ρ_gmsl                      = calibrated_params[i,13]   # statistical noise parameter
-    α₀_CO₂                      = calibrated_params[i,14]   # statistical noise parameter (will not use)
-    CO2_0                       = calibrated_params[i,15]
-    N2O_0                       = calibrated_params[i,16]
-    temperature_0               = calibrated_params[i,17]   # statistical noise parameter (will not use)
-    ocean_heat_0                = calibrated_params[i,18]   # statistical noise parameter
-    thermal_s0                  = calibrated_params[i,19]
-    greenland_v0                = calibrated_params[i,20]
-    glaciers_v0                 = calibrated_params[i,21]
-    glaciers_s0                 = calibrated_params[i,22]
-    antarctic_s0                = calibrated_params[i,23]
-    Q10                         = calibrated_params[i,24]
-    CO2_fertilization           = calibrated_params[i,25]
-    CO2_diffusivity             = calibrated_params[i,26]
-    heat_diffusivity            = calibrated_params[i,27]
-    rf_scale_aerosol            = calibrated_params[i,28]
-    climate_sensitivity         = calibrated_params[i,29]
-    thermal_alpha               = calibrated_params[i,30]
-    greenland_a                 = calibrated_params[i,31]
-    greenland_b                 = calibrated_params[i,32]
-    greenland_alpha             = calibrated_params[i,33]
-    greenland_beta              = calibrated_params[i,34]
-    glaciers_beta0              = calibrated_params[i,35]
-    glaciers_n                  = calibrated_params[i,36]
-    anto_alpha                  = calibrated_params[i,37]
-    anto_beta                   = calibrated_params[i,38]
-    antarctic_gamma             = calibrated_params[i,39]
-    antarctic_alpha             = calibrated_params[i,40]
-    antarctic_mu                = calibrated_params[i,41]
-    antarctic_nu                = calibrated_params[i,42]
-    antarctic_precip0           = calibrated_params[i,43]
-    antarctic_kappa             = calibrated_params[i,44]
-    antarctic_flow0             = calibrated_params[i,45]
-    antarctic_runoff_height0    = calibrated_params[i,46]
-    antarctic_c                 = calibrated_params[i,47]
-    antarctic_bed_height0       = calibrated_params[i,48]
-    antarctic_slope             = calibrated_params[i,49]
-    antarctic_lambda            = calibrated_params[i,50]
-    antarctic_temp_threshold    = calibrated_params[i,51]
+    σ_temperature               = calibrated_params[i,4]    # statistical noise parameter
+    σ_ocean_heat                = calibrated_params[i,5]    # statistical noise parameter
+    σ_glaciers                  = calibrated_params[i,6]    # statistical noise parameter
+    σ_greenland                 = calibrated_params[i,7]    # statistical noise parameter
+    σ_antarctic                 = calibrated_params[i,8]    # statistical noise parameter
+    σ_gmsl                      = calibrated_params[i,9]    # statistical noise parameter
+    ρ_temperature               = calibrated_params[i,10]   # statistical noise parameter
+    ρ_ocean_heat                = calibrated_params[i,11]   # statistical noise parameter
+    ρ_glaciers                  = calibrated_params[i,12]   # statistical noise parameter
+    ρ_greenland                 = calibrated_params[i,13]   # statistical noise parameter
+    ρ_antarctic                 = calibrated_params[i,14]   # statistical noise parameter
+    ρ_gmsl                      = calibrated_params[i,15]   # statistical noise parameter
+    CO2_0                       = calibrated_params[i,16]
+    N2O_0                       = calibrated_params[i,17]
+    temperature_0               = calibrated_params[i,18]   # statistical noise parameter (will not use)
+    ocean_heat_0                = calibrated_params[i,19]   # statistical noise parameter
+    thermal_s0                  = calibrated_params[i,20]
+    greenland_v0                = calibrated_params[i,21]
+    glaciers_v0                 = calibrated_params[i,22]
+    glaciers_s0                 = calibrated_params[i,23]
+    antarctic_s0                = calibrated_params[i,24]
+    Q10                         = calibrated_params[i,25]
+    CO2_fertilization           = calibrated_params[i,26]
+    CO2_diffusivity             = calibrated_params[i,27]
+    heat_diffusivity            = calibrated_params[i,28]
+    rf_scale_aerosol            = calibrated_params[i,29]
+    climate_sensitivity         = calibrated_params[i,30]
+    thermal_alpha               = calibrated_params[i,31]
+    greenland_a                 = calibrated_params[i,32]
+    greenland_b                 = calibrated_params[i,33]
+    greenland_alpha             = calibrated_params[i,34]
+    greenland_beta              = calibrated_params[i,35]
+    glaciers_beta0              = calibrated_params[i,36]
+    glaciers_n                  = calibrated_params[i,37]
+    anto_alpha                  = calibrated_params[i,38]
+    anto_beta                   = calibrated_params[i,39]
+    antarctic_gamma             = calibrated_params[i,40]
+    antarctic_alpha             = calibrated_params[i,41]
+    antarctic_mu                = calibrated_params[i,42]
+    antarctic_nu                = calibrated_params[i,43]
+    antarctic_precip0           = calibrated_params[i,44]
+    antarctic_kappa             = calibrated_params[i,45]
+    antarctic_flow0             = calibrated_params[i,46]
+    antarctic_runoff_height0    = calibrated_params[i,47]
+    antarctic_c                 = calibrated_params[i,48]
+    antarctic_bed_height0       = calibrated_params[i,49]
+    antarctic_slope             = calibrated_params[i,50]
+    antarctic_lambda            = calibrated_params[i,51]
+    antarctic_temp_threshold    = calibrated_params[i,52]
+    lw_random_sample            = calibrated_params[i,53]
 
     # ----- Land Water Storage ----- #
-    update_param!(m, :landwater_storage, :lws_random_sample, lw_random_sample)
+    update_param!(m, :landwater_storage, :lws_random_sample, fill(lw_random_sample, num_years))
 
     # ----- Antarctic Ocean ----- #
     update_param!(m, :antarctic_ocean, :anto_α, anto_alpha)
@@ -205,7 +199,7 @@ for i = 1:num_samples
     # parameter values to be saved 
     param_vals = [γ_g, t_peak, γ_d, CO2_0, N2O_0, thermal_s0, greenland_v0, glaciers_v0, glaciers_s0, antarctic_s0, Q10, CO2_fertilization, CO2_diffusivity, heat_diffusivity, rf_scale_aerosol, climate_sensitivity, 
                  thermal_alpha, greenland_a, greenland_b, greenland_alpha, greenland_beta, glaciers_beta0, glaciers_n, anto_alpha, anto_beta, antarctic_gamma, antarctic_alpha, antarctic_mu, antarctic_nu, 
-                 antarctic_precip0, antarctic_kappa, antarctic_flow0, antarctic_runoff_height0, antarctic_c, antarctic_bed_height0, antarctic_slope, antarctic_lambda, antarctic_temp_threshold]
+                 antarctic_precip0, antarctic_kappa, antarctic_flow0, antarctic_runoff_height0, antarctic_c, antarctic_bed_height0, antarctic_slope, antarctic_lambda, antarctic_temp_threshold, lw_random_sample]
 
     # write current sample to respective array
     parameters[i,:]                     = param_vals                                                # values for each parameter
@@ -257,7 +251,7 @@ for i = 1:num_samples
 end
 
 # save parameter names for df
-param_names = ["gamma_g", "t_peak", "gamma_d", "CO2_0", "N2O_0", names(calibrated_params)[19:end]...]
+param_names = ["gamma_g", "t_peak", "gamma_d", "CO2_0", "N2O_0", names(calibrated_params)[20:end]...]
 
 # transform matrices to dataframes to improve interpretability (add parameter names/years)
 parameters_df                   = DataFrame(parameters, param_names)
@@ -284,10 +278,3 @@ save(joinpath(@__DIR__, "..", "results", "$output_dir", "greenland.csv"), slr_gr
 save(joinpath(@__DIR__, "..", "results", "$output_dir", "lw_storage.csv"), slr_landwater_storage_df)
 save(joinpath(@__DIR__, "..", "results", "$output_dir", "thermal_expansion.csv"), slr_thermal_expansion_df)
 save(joinpath(@__DIR__, "..", "results", "$output_dir", "ocean_heat.csv"), ocean_heat_df)
-
-#=
-# create and view the netCDF file
-create_netcdf(output_df)
-view_nc = Dataset(joinpath(@__DIR__, "../results/slr_output.nc"), "r")
-close(view_nc)
-=#
