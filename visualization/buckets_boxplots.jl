@@ -24,9 +24,9 @@ thermal_expansion   = DataFrame(load(joinpath(@__DIR__, "..", "results", "$outpu
 ocean_heat          = DataFrame(load(joinpath(@__DIR__, "..", "results", "$output_dir", "ocean_heat.csv")))
 
 # establish indices for different buckets of peaking times
-early_indices   = findall(parameters.t_peak .<= 2050)           # at or before 2050
-middle_indices  = findall(2050 .< parameters.t_peak .< 2100)    # between 2050 and 2100
-late_indices    = findall(parameters.t_peak .>= 2100)           # at or after 2100
+early_indices   = findall(parameters.t_peak .< 2050)           # before 2050
+middle_indices  = findall(2050 .<= parameters.t_peak .< 2100)  # at least 2050 and before 2100
+late_indices    = findall(parameters.t_peak .>= 2100)          # at least 2100
 
 # --------------------------------------------------------------------------------- #
 # -------------- Plot radiative forcing, temperature, and GMSLR ------------------- #
@@ -44,7 +44,7 @@ let
             titles = ["Radiative Forcing: $year" "Temperature: $year" "Global Mean Sea Level Rise: $year"]
             ylabels = ["Global Radiative Forcing (W/m²)", "Global Mean Temperature Anomaly (K)", "Global Mean Sea Level Anomaly (m)"]
             xticks = (1:3, ["Early" "Middle" "Late"])
-            ylims = [(0,13), (0,11), (0,11)]
+            ylims = [(0, 15.5), (0, 11), (-0.5, 13.5)]
             p1 = boxplot(xticks=xticks, ylim=ylims[i], title=titles[i], ylabel=ylabels[i])
             boxplot!(output[early_indices,"$year"], color=:green) # early peaking
             boxplot!(output[middle_indices,"$year"], color=:blue) # middle peaking
@@ -77,7 +77,7 @@ let
             # boxplots for contributors to GMSLR
             titles = ["Early Peaking: $year" "Middle Peaking: $year" "Late Peaking: $year"]
             xticks = (1:5, ["Antarctic" "GSIC" "Greenland" "LW Storage" "TE"])
-            ylims = [(-0.1, 0.9), (-0.4, 4), (-0.6, 5.5)]
+            ylims = [(-0.4, 1.75), (-0.9, 5.3), (-1.2, 7.2)]
             p1 = boxplot(xticks=xticks, ylims=ylims[i], title=titles[j], ylabel="Global Mean Sea Level Anomaly (m)")
             boxplot!(antarctic[bucket,"$year"])         # Antarctic ice sheet
             boxplot!(gsic[bucket,"$year"])              # glaciers and small ice caps
