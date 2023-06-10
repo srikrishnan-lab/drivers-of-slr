@@ -1,7 +1,6 @@
-#= this script produces 3 plots to illustrate the differences in outputs from selected low, medium, and high emissions trajectories:
+#= this script produces 2 plots to illustrate the outputs from different emissions trajectories:
 Plot 1: shows the results for emissions, temp, rf, and GMSLR for ONE run and how it compares to the 95% credible interval of all runs (does not consider low,med,high emissions)
-Plot 2: shows how low,med,high emissions translate to rf, temp, and GMSLR (shows median and 95% CI for low,med,high outputs)
-Plot 3: shows the corresponding GMSLR contributions for ONE run for each of low,med,high emissions (doesn't show uncertainty) =#
+Plot 2: shows how low,med,high emissions translate to rf, temp, and GMSLR (shows median and 95% CI for low,med,high outputs) =#
 
 using Pkg
 Pkg.activate(joinpath(@__DIR__, ".."))
@@ -32,9 +31,9 @@ i = 1 #rand(1:num_samples) # random run to look at (between 1 and num_samples)
 # create variables for years and xticks for plotting
 years = parse.(Int64, names(emissions))
 xticks = first(years):50:last(years)
-# establish indices for historical data and present data
+# establish indices for historical data and future values
 historical = findall((in)(first(years):2021), first(years):last(years)) # just historical data (1850-2021)
-indices = findall((in)(2022:2300), first(years):last(years)) # just present data (not historical)
+future = findall((in)(2022:2300), first(years):last(years)) # just future data (not historical)
 
 # -------------------------------------------------------------------------------------------------------- #
 # ---------------------- Plot 1: Input/Output Visualization for Individual Run --------------------------- #
@@ -80,199 +79,66 @@ display(all_plots1)
 # ----- Plot 2: Representative Low, Medium, & High Emissions Trajectories with Output Visualization ------ #
 # -------------------------------------------------------------------------------------------------------- #
 
-# get results for HIGH emissions and associated output
-emissions_high = DataFrame(load(joinpath(@__DIR__, "..", "results", "high", "emissions.csv")))
-rf_high        = DataFrame(load(joinpath(@__DIR__, "..", "results", "high", "radiative_forcing.csv")))
-temp_high      = DataFrame(load(joinpath(@__DIR__, "..", "results", "high", "temperature.csv")))
-gmslr_high     = DataFrame(load(joinpath(@__DIR__, "..", "results", "high", "gmslr.csv")))
-antarctic_high = DataFrame(load(joinpath(@__DIR__, "..", "results", "high", "antarctic.csv")))
-gsic_high      = DataFrame(load(joinpath(@__DIR__, "..", "results", "high", "gsic.csv")))
-greenland_high = DataFrame(load(joinpath(@__DIR__, "..", "results", "high", "greenland.csv")))
-lw_high        = DataFrame(load(joinpath(@__DIR__, "..", "results", "high", "lw_storage.csv")))
-te_high        = DataFrame(load(joinpath(@__DIR__, "..", "results", "high", "thermal_expansion.csv")))
-# get results for MEDIUM emissions and associated output
-emissions_med  = DataFrame(load(joinpath(@__DIR__, "..", "results", "medium", "emissions.csv")))
-rf_med         = DataFrame(load(joinpath(@__DIR__, "..", "results", "medium", "radiative_forcing.csv")))
-temp_med       = DataFrame(load(joinpath(@__DIR__, "..", "results", "medium", "temperature.csv")))
-gmslr_med      = DataFrame(load(joinpath(@__DIR__, "..", "results", "medium", "gmslr.csv")))
-antarctic_med  = DataFrame(load(joinpath(@__DIR__, "..", "results", "medium", "antarctic.csv")))
-gsic_med       = DataFrame(load(joinpath(@__DIR__, "..", "results", "medium", "gsic.csv")))
-greenland_med  = DataFrame(load(joinpath(@__DIR__, "..", "results", "medium", "greenland.csv")))
-lw_med         = DataFrame(load(joinpath(@__DIR__, "..", "results", "medium", "lw_storage.csv")))
-te_med         = DataFrame(load(joinpath(@__DIR__, "..", "results", "medium", "thermal_expansion.csv")))
-# get results for LOW emissions and associated output
-emissions_low  = DataFrame(load(joinpath(@__DIR__, "..", "results", "low", "emissions.csv")))
-rf_low         = DataFrame(load(joinpath(@__DIR__, "..", "results", "low", "radiative_forcing.csv")))
-temp_low       = DataFrame(load(joinpath(@__DIR__, "..", "results", "low", "temperature.csv")))
-gmslr_low      = DataFrame(load(joinpath(@__DIR__, "..", "results", "low", "gmslr.csv")))
-antarctic_low  = DataFrame(load(joinpath(@__DIR__, "..", "results", "low", "antarctic.csv")))
-gsic_low       = DataFrame(load(joinpath(@__DIR__, "..", "results", "low", "gsic.csv")))
-greenland_low  = DataFrame(load(joinpath(@__DIR__, "..", "results", "low", "greenland.csv")))
-lw_low         = DataFrame(load(joinpath(@__DIR__, "..", "results", "low", "lw_storage.csv")))
-te_low         = DataFrame(load(joinpath(@__DIR__, "..", "results", "low", "thermal_expansion.csv")))
+# four panels of plot
+p1 = plot(title="Selected CO₂ Emissions Trajectories", xlabel="Year", ylabel="Total CO₂ Emissions (GtCO₂/yr)") # p1 = emissions
+p2 = plot(title="Radiative Forcing", xlabel="Year", ylabel="Global Radiative Forcing (W/m²)", ylim=(-2,12)) # p2 = radiative forcing
+p3 = plot(title="Temperature", xlabel="Year", ylabel="Global Mean Temperature Anomaly (K)", ylim=(-1,9)) # p3 = temperature
+p4 = plot(title="Global Mean Sea Level", xlabel="Year", ylabel="Global Mean Sea Level Anomaly (m)") # p4 = global mean sea level
 
-# plot of emissions: high, medium, low emissions
-plt1 = plot(title="Selected CO₂ Emissions Trajectories", xlabel="Year", ylabel="Total CO₂ Emissions (GtCO₂/yr)", legend=:topleft, xticks=xticks)
-# add representative emissions curves
-plot!(years[indices], collect(emissions_high[1,:][indices]), label="High Emissions", color=:purple, xticks=xticks, linewidth=3)
-plot!(years[indices], collect(emissions_med[1,:][indices]), label="Medium Emissions", color=:blue, xticks=xticks, linewidth=3)
-plot!(years[indices], collect(emissions_low[1,:][indices]), label="Low Emissions", color=:green, xticks=xticks, linewidth=3)
-# add in historical data
-scatter!(years[historical], collect(emissions_high[1,:][historical]), label="Historical Data", color=:black, markersize=2)
-# add in extreme RCP scenario emissions (GtCO₂)
-rcp26, rcp85 = rcp_emissions()
-scatter!(rcp85[:,1], rcp85[:,2], label="RCP 8.5", color=:black, markersize=3, shape=:rect)
-scatter!(rcp26[:,1], rcp26[:,2], label="RCP 2.6", color=:black, markersize=4, shape=:utriangle)
+# initialize values
+run_name = ["high", "medium", "low"]
+labels = ["High", "Medium", "Low"]
+colors = [:purple, :blue, :green] # high, med, low emissions colors
 
-# plot of radiative forcing: CI and median for low, med, high emissions
-plt2 = plot(title="Radiative Forcing", xlabel="Year", ylabel="Global Radiative Forcing (W/m²)", legend=:topleft, xticks=xticks, ylim=(-2,12))
-# create quantiles for low, medium, and high emissions samples for forcing (95% credible interval & median)
-rf_quantiles_high = mapslices(x -> quantile(x, [0.025, 0.5, 0.975]), Matrix(rf_high), dims=1)
-rf_quantiles_med  = mapslices(x -> quantile(x, [0.025, 0.5, 0.975]), Matrix(rf_med), dims=1)
-rf_quantiles_low  = mapslices(x -> quantile(x, [0.025, 0.5, 0.975]), Matrix(rf_low), dims=1)
-# add in historical data
-scatter!(years[historical], collect(rf_quantiles_high[1,:][historical]), label="Historical Data", color=:black, markersize=2)
-# add in credible intervals for low, medium, and high forcing
-plot!(years[indices], rf_quantiles_high[1,:][indices], fillrange=rf_quantiles_high[3,:][indices], fillalpha=0.5, alpha=0, color=:purple, label="95% CI High Emissions")
-plot!(years[indices], rf_quantiles_med[1,:][indices], fillrange=rf_quantiles_med[3,:][indices], fillalpha=0.5, alpha=0, color=:blue, label="95% CI Medium Emissions")
-plot!(years[indices], rf_quantiles_low[1,:][indices], fillrange=rf_quantiles_low[3,:][indices], fillalpha=0.5, alpha=0, color=:green, label="95% CI Low Emissions")
-# add in median for low, medium, and high forcing
-plot!(years[indices], rf_quantiles_high[2,:][indices], color=:purple, label="Median High Emissions", linewidth=2)
-plot!(years[indices], rf_quantiles_med[2,:][indices], color=:blue, label="Median Medium Emissions", linewidth=2)
-plot!(years[indices], rf_quantiles_low[2,:][indices], color=:green, label="Median Low Emissions", linewidth=2)
-# add in vertical line for radiative forcing in 2100 (defines the RCP scenario)
-vline!([2100], color=:black, linestyle=:dash, label=:false)
-# find value for low, med, high median forcing at 2100 (defines RCP scenario)
-idx_2100 = findall((in)(2100), first(years):last(years))
-#println("High Emissions RCP:", rf_quantiles_high[2,idx_2100])
-#println("Medium Emissions RCP:", rf_quantiles_med[2,idx_2100])
-#println("Low Emissions RCP:", rf_quantiles_low[2,idx_2100])
+for (i,run) in enumerate(run_name)
+    # create variable for current run's label
+    current_label = labels[i]
 
-# plot of temperature: CI and median for low, med, high emissions
-plt3 = plot(title="Temperature", xlabel="Year", ylabel="Global Mean Temperature Anomaly (K)", legend=:topleft, xticks=xticks, ylim=(-1,9))
-# create quantiles for low, medium, and high emissions samples for temperature (95% credible interval & median)
-temp_quantiles_high = mapslices(x -> quantile(x, [0.025, 0.5, 0.975]), Matrix(temp_high), dims=1)
-temp_quantiles_med  = mapslices(x -> quantile(x, [0.025, 0.5, 0.975]), Matrix(temp_med), dims=1)
-temp_quantiles_low  = mapslices(x -> quantile(x, [0.025, 0.5, 0.975]), Matrix(temp_low), dims=1)
-# add in historical data
-scatter!(years[historical], collect(temp_quantiles_high[1,:][historical]), label="Historical Data", color=:black, markersize=2)
-# add in credible intervals for low, medium, and high temperature
-plot!(years[indices], temp_quantiles_high[1,:][indices], fillrange=temp_quantiles_high[3,:][indices], fillalpha=0.5, alpha=0, color=:purple, label="95% CI High Emissions")
-plot!(years[indices], temp_quantiles_med[1,:][indices], fillrange=temp_quantiles_med[3,:][indices], fillalpha=0.5, alpha=0, color=:blue, label="95% CI Medium Emissions")
-plot!(years[indices], temp_quantiles_low[1,:][indices], fillrange=temp_quantiles_low[3,:][indices], fillalpha=0.5, alpha=0, color=:green, label="95% CI Low Emissions")
-# add in median for low, medium, and high temperature
-plot!(years[indices], temp_quantiles_high[2,:][indices], color=:purple, label="Median High Emissions", linewidth=2)
-plot!(years[indices], temp_quantiles_med[2,:][indices], color=:blue, label="Median Medium Emissions", linewidth=2)
-plot!(years[indices], temp_quantiles_low[2,:][indices], color=:green, label="Median Low Emissions", linewidth=2)
+    # get results for run
+    co2       = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run", "emissions.csv")))
+    rf        = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run", "radiative_forcing.csv")))
+    temp      = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run", "temperature.csv")))
+    gmslr     = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run", "gmslr.csv")))
+    antarctic = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run", "antarctic.csv")))
+    gsic      = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run", "gsic.csv")))
+    greenland = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run", "greenland.csv")))
+    lw        = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run", "lw_storage.csv")))
+    te        = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run", "thermal_expansion.csv")))
 
-# plot of GMSLR: CI and median for low, med, high emissions
-plt4 = plot(title="Global Mean Sea Level", xlabel="Year", ylabel="Global Mean Sea Level Anomaly (m)", legend=:topleft, xticks=xticks)
-# create quantiles for low, medium, and high emissions samples for sea level rise (95% credible interval & median)
-slr_quantiles_high = mapslices(x -> quantile(x, [0.025, 0.5, 0.975]), Matrix(gmslr_high), dims=1)
-slr_quantiles_med  = mapslices(x -> quantile(x, [0.025, 0.5, 0.975]), Matrix(gmslr_med), dims=1)
-slr_quantiles_low  = mapslices(x -> quantile(x, [0.025, 0.5, 0.975]), Matrix(gmslr_low), dims=1)
-# add in historical data
-scatter!(years[historical], collect(slr_quantiles_high[1,:][historical]), label="Historical Data", color=:black, markersize=2)
-# add in credible intervals for low, medium, and high sea level rise
-plot!(years[indices], slr_quantiles_high[1,:][indices], fillrange=slr_quantiles_high[3,:][indices], fillalpha=0.5, alpha=1, color=:purple, label="95% CI High Emissions")
-plot!(years[indices], slr_quantiles_med[1,:][indices], fillrange=slr_quantiles_med[3,:][indices], fillalpha=0.5, alpha=1, color=:blue, label="95% CI Medium Emissions")
-plot!(years[indices], slr_quantiles_low[1,:][indices], fillrange=slr_quantiles_low[3,:][indices], fillalpha=0.5, alpha=1, color=:green, label="95% CI Low Emissions")
-# add in median for low, medium, and high sea level rise
-plot!(years[indices], slr_quantiles_high[2,:][indices], color=:purple, label="Median High Emissions", linewidth=2)
-plot!(years[indices], slr_quantiles_med[2,:][indices], color=:blue, label="Median Medium Emissions", linewidth=2)
-plot!(years[indices], slr_quantiles_low[2,:][indices], color=:green, label="Median Low Emissions", linewidth=2)
+    # Plot 1: add emissions curve for current run
+    plot!(p1, years[future], collect(co2[1,:][future]), label="$current_label Emissions", color=colors[i], linewidth=3)
 
-# combine plots and display
-all_plots2 = plot(plt1, plt2, plt3, plt4, layout=4, size=(1000,800), margin=5Plots.mm)
-display(all_plots2)
-#savefig(all_plots2, "/Users/ced227/Desktop/plots/low_med_high_output.png")
+    # for Plots 2, 3, and 4: add median and credible interval
+    uncertain_outputs = [(p2,rf), (p3,temp), (p4,gmslr)]
+    for (plot,output) in uncertain_outputs 
+        # create quantiles for current run and current output (95% credible interval & median)
+        quantiles = mapslices(x -> quantile(x, [0.025, 0.5, 0.975]), Matrix(output), dims=1)
+        # add credible interval
+        plot!(plot, years[future], quantiles[1,:][future], fillrange=quantiles[3,:][future], fillalpha=0.5, alpha=0, color=colors[i], label="95% CI $current_label Emissions")
+        # add median line
+        plot!(plot, years[future], quantiles[2,:][future], color=colors[i], label="Median $current_label Emissions", linewidth=2)
+    end
 
-# -------------------------------------------------------------------------------------------------------- #
-# -------------- Plot 3: GMSLR Contributors for Low, Medium, High Emissions Comparison ------------------- #
-# -------------------------------------------------------------------------------------------------------- #
-
-# define labels for plotting
-labels=["Antarctic" "GSIC" "Greenland" "LW Storage" "Thermal Expansion"]
-
-# create a stacked area plot for sea level rise for LOW emissions
-fig1 = plot(title="Low Emissions", xlabel="Year", ylabel="Global Mean Sea Level Anomaly (m)", legend=:topleft, xticks=xticks, ylim=(-1,10))
-# create a matrix of sea level rise contributors
-slr_contributions_low = [collect(antarctic_low[1,:])';
-                         collect(gsic_low[1,:])';
-                         collect(greenland_low[1,:])';
-                         collect(lw_low[1,:])';
-                         collect(te_low[1,:])']
-areaplot!(years, slr_contributions_low', label=labels, color_palette=:darkrainbow, alpha=1, fillalpha=0.5)
-plot!(years, collect(gmslr_low[1,:]), label="GMSLR", color=:black, linewidth=4, linestyle=:dash)
-
-# create a stacked area plot for sea level rise for MEDIUM emissions
-fig2 = plot(title="Medium Emissions", xlabel="Year", ylabel="Global Mean Sea Level Anomaly (m)", legend=:topleft, xticks=xticks, ylim=(-1,10))
-# create a matrix of sea level rise contributors
-slr_contributions_med = [collect(antarctic_med[1,:])';
-                         collect(gsic_med[1,:])';
-                         collect(greenland_med[1,:])';
-                         collect(lw_med[1,:])';
-                         collect(te_med[1,:])']
-areaplot!(years, slr_contributions_med', label=labels, color_palette=:darkrainbow, alpha=1, fillalpha=0.5)
-plot!(years, collect(gmslr_med[1,:]), label="GMSLR", color=:black, linewidth=4, linestyle=:dash)
-
-# create a stacked area plot for sea level rise for HIGH emissions
-fig3 = plot(title="High Emissions", xlabel="Year", ylabel="Global Mean Sea Level Anomaly (m)", legend=:topleft, xticks=xticks, ylim=(-1,10))
-# create a matrix of sea level rise contributors
-slr_contributions_high = [collect(antarctic_high[1,:])';
-                         collect(gsic_high[1,:])';
-                         collect(greenland_high[1,:])';
-                         collect(lw_high[1,:])';
-                         collect(te_high[1,:])']
-areaplot!(years, slr_contributions_high', label=labels, color_palette=:darkrainbow, alpha=1, fillalpha=0.5)
-plot!(years, collect(gmslr_high[1,:]), label="GMSLR", color=:black, linewidth=4, linestyle=:dash)
-
-# combine all plots and format
-all_plots3 = plot(fig1, fig2, fig3, layout=(1,3))
-plot!(size=(1600,500), margin=10Plots.mm)
-display(all_plots3)
-#savefig(all_plots3, "/Users/ced227/Desktop/plots/low_med_high_slr_contributions.png")
-
-# -------------------------------------------------------------------------------------------------------- #
-# --------------------- Supplementary: Can be useful for benchmarking ------------------------------------ #
-# -------------------------------------------------------------------------------------------------------- #
-
-#= subset df to just include emissions parameters
-emission_params = parameters[:,[:gamma_g, :t_peak, :gamma_d]]
-
-# establish relevant quantiles to divide emissions trajectories
-q_middle = mapslices(x -> quantile(x, [0.45, 0.55]), Matrix(emission_params), dims=1) # middle 10% of samples
-q_80     = mapslices(x -> quantile(x, [0.1, 0.9]), Matrix(emission_params), dims=1) # 80% credible interval
-q_90     = mapslices(x -> quantile(x, [0.05, 0.95]), Matrix(emission_params), dims=1) # 90% credible interval
-
-# isolate column for each emissions parameter
-growth = parameters[:,:gamma_g]
-peak = parameters[:,:t_peak]
-decline = parameters[:,:gamma_d]
-
-# initialize storage for indices translating to low, medium, and high emissions samples
-lower_idx = []
-medium_idx = []
-upper_idx = []
-
-for i in 1:num_samples
-    # if we have early peaking and rapid decarbonization
-    if peak[i] <= q_90[1,2] && decline[i] >= q_90[2,3]
-        push!(lower_idx, i)
-    # if we have medium peaking and medium decarbonization
-    elseif q_middle[1,2] <= peak[i] <= q_middle[2,2] && q_middle[1,3] <= decline[i] <= q_middle[2,3]
-        push!(medium_idx, i)
-    # if we have late peaking and slow decarbonization
-    elseif peak[i] >= q_90[2,2] && decline[i] <= q_90[1,3]
-        push!(upper_idx, i)
+    # for all plots, add historical data
+    all_outputs = [(p1,co2), (p2,rf), (p3,temp), (p4,gmslr)] # all plots
+    if i == length(run_name) # if we're on the last run
+        for (plot,output) in all_outputs
+            # add historical data for all plots
+            scatter!(plot, years[historical], collect(output[1,:][historical]), label="Historical Data", color=:black, markersize=2)
+            if plot == p1 # emissions plot
+                # add in extreme RCP scenario emissions (GtCO₂)
+                rcp26, rcp85 = rcp_emissions()
+                scatter!(p1, rcp85[:,1], rcp85[:,2], label="RCP 8.5", color=:black, markersize=3, shape=:rect)
+                scatter!(p1, rcp26[:,1], rcp26[:,2], label="RCP 2.6", color=:black, markersize=4, shape=:utriangle)
+            elseif plot == p2 # radiative forcing plot
+                # add in vertical line for radiative forcing in 2100 (defines the RCP scenario)
+                vline!([2100], color=:black, linestyle=:dash, label=:false)
+            end
+        end
     end
 end
-println(length(lower_idx)) # shows how many samples meet the criteria
-println(length(medium_idx))
-println(length(upper_idx))
 
-# df of values for each emission parameter meeting criteria (growth, peak, decline) (for reference)
-lower_samples  = emission_params[lower_idx,:]
-medium_samples = emission_params[medium_idx,:]
-upper_samples  = emission_params[upper_idx,:]
-=#
+# combine plots and display
+all_plots2 = plot(p1, p2, p3, p4, layout=4, size=(1000,800), margin=5Plots.mm, xticks=xticks, legend=:topleft, legendfontsize=7)
+display(all_plots2)
+#savefig(all_plots2, "/Users/ced227/Desktop/plots/low_med_high_output.pdf")
