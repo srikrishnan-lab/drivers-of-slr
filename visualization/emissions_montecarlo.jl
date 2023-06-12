@@ -14,14 +14,12 @@ let num_samples = 10_000
     # initialize historical observations
     historical_data = historical_emissions() # years 1850-2021
 
-    # add in extreme RCP scenario emissions (units of GtCO₂)
-    rcp26, rcp85 = rcp_emissions()
-
     # set up storage for years and emissions trajectories
     t = zeros(451)
     num_years = length(t)
     gtco2 = zeros(Float64, num_samples, num_years)
 
+    # initialize plot
     p = plot(xlabel="Year", ylabel="CO₂ Emissions (GtCO₂)", legend=:topright, title="Emissions Trajectories Credible Intervals")
 
     # generate num_samples of parameter samples for emissions curves
@@ -51,7 +49,8 @@ let num_samples = 10_000
     plot!(t, gtco2_quantiles_95[1,:], fillrange=gtco2_quantiles_95[2,:], fillalpha=0.5, alpha=0.35, color=:blue, label="95% CI")
     plot!(t, gtco2_quantiles_90[1,:], fillrange=gtco2_quantiles_90[2,:], fillalpha=0.7, alpha=0.35, color=:blue, label="90% CI")
 
-    # add RCP scenarios for reference
+    # add in extreme RCP scenarios for reference
+    rcp26, rcp85 = rcp_emissions()
     scatter!(rcp85[:,1], rcp85[:,2], label="RCP 8.5", markersize=4, color=:black, shape=:rect) # RCP 8.5
     scatter!(rcp26[:,1], rcp26[:,2], label="RCP 2.6", markersize=5, color=:black, shape=:utriangle) # RCP 2.6
 
