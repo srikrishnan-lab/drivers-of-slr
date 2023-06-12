@@ -9,7 +9,6 @@ using Random
 include("../src/functions.jl")
 
 let num_samples = 10_000
-
     Random.seed!(1) # set the seed
 
     # initialize historical observations
@@ -30,14 +29,10 @@ let num_samples = 10_000
     peak    = trunc.(Int64, rand(truncated(Normal(2070,25), 2030, 2200), num_samples)) # peaking time
     decline = rand(truncated(Normal(0.07,0.05), 0.001, 0.2), num_samples)              # decline parameter
 
+    # loop through samples
     for i = 1:num_samples
         # isolate one set of samples and update parameters to those values
-        γ_g = growth[i]
-        t_peak = peak[i]
-        γ_d = decline[i]
-
-        t, gtco2[i,:] = emissions_curve(historical_data, γ_g=γ_g, t_peak=t_peak, γ_d=γ_d) # years and emissions
-        
+        t[:], gtco2[i,:] = emissions_curve(historical_data, γ_g=growth[i], t_peak=peak[i], γ_d=decline[i]) # years and emissions
         #plot!(t[173:451], gtco2[i,collect(173:451)], label=:false) # add line on plot for each sample
     end
 
@@ -61,7 +56,7 @@ let num_samples = 10_000
     scatter!(rcp26[:,1], rcp26[:,2], label="RCP 2.6", markersize=5, color=:black, shape=:utriangle) # RCP 2.6
 
     display(p)
-    #savefig(p, "/Users/ced227/Desktop/plots/emissions_CI.png")
+    #savefig(p, "/Users/ced227/Desktop/plots/emissions_CI.pdf")
     
     # calculate surprise index to check quantiles (just a sanity check)
     count = 0
@@ -79,5 +74,4 @@ let num_samples = 10_000
         end
     end
     #println(count / total) # fraction of total count outside of specified CI
-
 end
