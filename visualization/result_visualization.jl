@@ -6,7 +6,7 @@ using Pkg
 Pkg.activate(joinpath(@__DIR__, ".."))
 Pkg.instantiate()
 
-using Plots
+using Plots, Measures
 using StatsPlots
 include("../src/functions.jl")
 
@@ -78,67 +78,69 @@ display(all_plots1)
 # -------------------------------------------------------------------------------------------------------- #
 # ----- Plot 2: Representative Low, Medium, & High Emissions Trajectories with Output Visualization ------ #
 # -------------------------------------------------------------------------------------------------------- #
+let
+    # four panels of plot
+    p1 = plot(title="Selected Emissions Trajectories", xlabel="Year", ylabel="Total CO₂ Emissions (GtCO₂/yr)") # p1 = emissions
+    p2 = plot(title="Radiative Forcing", xlabel="Year", ylabel="Global Radiative Forcing (W/m²)", ylim=(-2,12)) # p2 = radiative forcing
+    p3 = plot(title="Temperature", xlabel="Year", ylabel="Global Mean Temperature Anomaly (K)", ylim=(-1,9)) # p3 = temperature
+    p4 = plot(title="Global Mean Sea Level", xlabel="Year", ylabel="Global Mean Sea Level Anomaly (m)") # p4 = global mean sea level
 
-# four panels of plot
-p1 = plot(title="Selected CO₂ Emissions Trajectories", xlabel="Year", ylabel="Total CO₂ Emissions (GtCO₂/yr)") # p1 = emissions
-p2 = plot(title="Radiative Forcing", xlabel="Year", ylabel="Global Radiative Forcing (W/m²)", ylim=(-2,12)) # p2 = radiative forcing
-p3 = plot(title="Temperature", xlabel="Year", ylabel="Global Mean Temperature Anomaly (K)", ylim=(-1,9)) # p3 = temperature
-p4 = plot(title="Global Mean Sea Level", xlabel="Year", ylabel="Global Mean Sea Level Anomaly (m)") # p4 = global mean sea level
+    # initialize values
+    run_name = ["high", "medium", "low"]
+    labels = ["High", "Medium", "Low"]
+    colors = [:purple, :blue, :green] # high, med, low emissions colors
 
-# initialize values
-run_name = ["high", "medium", "low"]
-labels = ["High", "Medium", "Low"]
-colors = [:purple, :blue, :green] # high, med, low emissions colors
+    for (i,run) in enumerate(run_name)
+        # create variable for current run's label
+        current_label = labels[i]
 
-for (i,run) in enumerate(run_name)
-    # create variable for current run's label
-    current_label = labels[i]
+        # get results for run
+        co2       = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run", "emissions.csv")))
+        rf        = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run", "radiative_forcing.csv")))
+        temp      = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run", "temperature.csv")))
+        gmslr     = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run", "gmslr.csv")))
+        antarctic = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run", "antarctic.csv")))
+        gsic      = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run", "gsic.csv")))
+        greenland = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run", "greenland.csv")))
+        lw        = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run", "lw_storage.csv")))
+        te        = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run", "thermal_expansion.csv")))
 
-    # get results for run
-    co2       = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run", "emissions.csv")))
-    rf        = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run", "radiative_forcing.csv")))
-    temp      = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run", "temperature.csv")))
-    gmslr     = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run", "gmslr.csv")))
-    antarctic = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run", "antarctic.csv")))
-    gsic      = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run", "gsic.csv")))
-    greenland = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run", "greenland.csv")))
-    lw        = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run", "lw_storage.csv")))
-    te        = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run", "thermal_expansion.csv")))
+        # Plot 1: add emissions curve for current run
+        plot!(p1, years[future], collect(co2[1,:][future]), label="$current_label Emissions", color=colors[i], linewidth=3)
 
-    # Plot 1: add emissions curve for current run
-    plot!(p1, years[future], collect(co2[1,:][future]), label="$current_label Emissions", color=colors[i], linewidth=3)
+        # for Plots 2, 3, and 4: add median and credible interval
+        uncertain_outputs = [(p2,rf), (p3,temp), (p4,gmslr)]
+        for (plot,output) in uncertain_outputs 
+            # create quantiles for current run and current output (95% credible interval & median)
+            quantiles = mapslices(x -> quantile(x, [0.025, 0.5, 0.975]), Matrix(output), dims=1)
+            # add credible interval
+            plot!(plot, years[future], quantiles[1,:][future], fillrange=quantiles[3,:][future], fillalpha=0.5, alpha=0, color=colors[i], label="95% CI $current_label Emissions")
+            # add median line
+            plot!(plot, years[future], quantiles[2,:][future], color=colors[i], label="Median $current_label Emissions", linewidth=2)
+        end
 
-    # for Plots 2, 3, and 4: add median and credible interval
-    uncertain_outputs = [(p2,rf), (p3,temp), (p4,gmslr)]
-    for (plot,output) in uncertain_outputs 
-        # create quantiles for current run and current output (95% credible interval & median)
-        quantiles = mapslices(x -> quantile(x, [0.025, 0.5, 0.975]), Matrix(output), dims=1)
-        # add credible interval
-        plot!(plot, years[future], quantiles[1,:][future], fillrange=quantiles[3,:][future], fillalpha=0.5, alpha=0, color=colors[i], label="95% CI $current_label Emissions")
-        # add median line
-        plot!(plot, years[future], quantiles[2,:][future], color=colors[i], label="Median $current_label Emissions", linewidth=2)
-    end
-
-    # for all plots, add historical data
-    all_outputs = [(p1,co2), (p2,rf), (p3,temp), (p4,gmslr)] # all plots
-    if i == length(run_name) # if we're on the last run
-        for (plot,output) in all_outputs
-            # add historical data for all plots
-            scatter!(plot, years[historical], collect(output[1,:][historical]), label="Historical Data", color=:black, markersize=2)
-            if plot == p1 # emissions plot
-                # add in extreme RCP scenario emissions (GtCO₂)
-                rcp26, rcp85 = rcp_emissions()
-                scatter!(p1, rcp85[:,1], rcp85[:,2], label="RCP 8.5", color=:black, markersize=3, shape=:rect)
-                scatter!(p1, rcp26[:,1], rcp26[:,2], label="RCP 2.6", color=:black, markersize=4, shape=:utriangle)
-            elseif plot == p2 # radiative forcing plot
-                # add in vertical line for radiative forcing in 2100 (defines the RCP scenario)
-                vline!([2100], color=:black, linestyle=:dash, label=:false)
+        # for all plots, add historical data
+        all_outputs = [(p1,co2), (p2,rf), (p3,temp), (p4,gmslr)] # all plots
+        if i == length(run_name) # if we're on the last run
+            for (plot,output) in all_outputs
+                # add historical data for all plots
+                scatter!(plot, years[historical], collect(output[1,:][historical]), label="Historical Data", color=:black, markersize=2)
+                if plot == p1 # emissions plot
+                    # add in extreme RCP scenario emissions (GtCO₂)
+                    rcp26, rcp85 = rcp_emissions()
+                    scatter!(p1, rcp85[:,1], rcp85[:,2], label="RCP 8.5", color=:black, markersize=3, shape=:rect)
+                    scatter!(p1, rcp26[:,1], rcp26[:,2], label="RCP 2.6", color=:black, markersize=4, shape=:utriangle)
+                elseif plot == p2 # radiative forcing plot
+                    # add in vertical line for radiative forcing in 2100 (defines the RCP scenario)
+                    vline!([2100], color=:black, linestyle=:dash, label=:false)
+                end
             end
         end
     end
-end
 
-# combine plots and display
-all_plots2 = plot(p1, p2, p3, p4, layout=4, size=(1000,800), margin=5Plots.mm, xticks=xticks, legend=:topleft, legendfontsize=7)
-display(all_plots2)
-#savefig(all_plots2, "/Users/ced227/Desktop/plots/low_med_high_output.pdf")
+    # combine plots and display
+    all_plots2 = plot(p1, p2, p3, p4, layout=4, size=(1000,800), xticks=xticks, legend=:topleft, ylabelfontsize=10,
+                      legendfontsize=7, left_margin=4mm, top_margin=3mm, bottom_margin=5mm, ann=((0,1.1), :auto))
+    display(all_plots2)
+    #savefig(all_plots2, "/Users/ced227/Desktop/plots/low_med_high_output.pdf")
+end
