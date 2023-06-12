@@ -1,6 +1,5 @@
-#= CHANGE this script divides the results of model_ensemble.jl into three buckets based on peaking time: before 2050, 2050-2100, and after 2100.
-Then plots boxplots for relevant outputs for each of the three buckets for three years: 2100, 2200, and 2300. 
-Plot 3: shows the corresponding GMSLR contributions for ONE run for each of low,med,high emissions (doesn't show uncertainty) =#
+#= this script divides the results of model_ensemble.jl into three buckets of peaking time and three buckets of GMSLR outcomes.
+Then plots stacked area plots for ONE sample (doesn't show uncertainty) for each combination of peaking time & GMSLR (9 scenario combinations total). =#
 
 using Pkg
 Pkg.activate(joinpath(@__DIR__, ".."))
@@ -30,13 +29,13 @@ middle_tpeak = findall(2050 .<= parameters.t_peak .< 2100)  # at least 2050 and 
 late_tpeak   = findall(parameters.t_peak .>= 2100)          # at least 2100
 
 # establish indices for different buckets of GMSLR
-quantiles   = mapslices(x -> quantile(x, [0.05, 0.475, 0.525, 0.95]), Matrix(gmslr), dims=1) # 5%, 47.5%, 52.5%, and 95% CI
-low_gmslr   = findall(gmslr[:,end] .< quantiles[1,end])                                          # lowest 5% of GMSLR outcomes
-med_gmslr   = findall((gmslr[:,end] .> quantiles[2,end]) .&& (gmslr[:,end] .< quantiles[3,end])) # middle 5% of GMSLR outcomes
-high_gmslr  = findall(gmslr[:,end] .> quantiles[4,end])                                          # highest 5% of GMSLR outcomes
+quantiles  = mapslices(x -> quantile(x, [0.05, 0.475, 0.525, 0.95]), Matrix(gmslr), dims=1) # 5%, 47.5%, 52.5%, and 95% CI
+low_gmslr  = findall(gmslr[:,end] .< quantiles[1,end])                                          # lowest 5% of GMSLR outcomes
+med_gmslr  = findall((gmslr[:,end] .> quantiles[2,end]) .&& (gmslr[:,end] .< quantiles[3,end])) # middle 5% of GMSLR outcomes
+high_gmslr = findall(gmslr[:,end] .> quantiles[4,end])                                          # highest 5% of GMSLR outcomes
 
 # define the index for the scenarios that will be plotted
-Random.seed!(1)
+Random.seed!(1) # randomly select one index from vector of samples that fit criteria
 s1 = rand(intersect(early_tpeak,  low_gmslr))
 s2 = rand(intersect(middle_tpeak, low_gmslr))
 s3 = rand(intersect(late_tpeak,   low_gmslr))
@@ -53,20 +52,19 @@ s9 = rand(intersect(late_tpeak,   high_gmslr))
 
 all_plots = []
 scenarios = [s1, s2, s3, s4, s5, s6, s7, s8, s9]
+years = parse.(Int64, names(gmslr)) # vector of years
+xticks = first(years):50:last(years)
+ylims = [(-0.9,1.2), (-0.4,4), (-0.5,8)]
+labels = ["Antarctic" "GSIC" "Greenland" "LW Storage" "Thermal Expansion"] # labels for plot legend
 # define titles for each plot
 titles = ["Early Peaking, Low GMSLR",    "Middle Peaking, Low GMSLR",    "Late Peaking, Low GMSLR",
           "Early Peaking, Medium GMSLR", "Middle Peaking, Medium GMSLR", "Late Peaking, Medium GMSLR",
           "Early Peaking, High GMSLR",   "Middle Peaking, High GMSLR",   "Late Peaking, High GMSLR"]
-# define labels for plotting
-labels = ["Antarctic" "GSIC" "Greenland" "LW Storage" "Thermal Expansion"]
-years = parse.(Int64, names(gmslr)) # vector of years
-xticks = first(years):50:last(years)
-ylims = [(-0.9,1.2), (-0.4,4), (-0.5,8)]
 
 for (i,scenario) in enumerate(scenarios) # loop through scenarios
     j = trunc(Int64, (i-1)/3)+1 # index for yticks
     # initialize the plot
-    p = plot(title=titles[i], ylim=ylims[j], xlabel="Year", ylabel="Global Mean Sea Level Anomaly (m)")
+    p1 = plot(title=titles[i], ylim=ylims[j], xlabel="Year", ylabel="Global Mean Sea Level Anomaly (m)")
     # create a matrix of sea level rise contributors
     slr_contributors = [collect(antarctic[scenario,:])';         # Antarctic Ice Sheet
                         collect(gsic[scenario,:])';              # glaciers and small ice sheets
@@ -76,7 +74,7 @@ for (i,scenario) in enumerate(scenarios) # loop through scenarios
     areaplot!(years, slr_contributors', label=labels, color_palette=:darkrainbow, alpha=1, fillalpha=0.5)
     plot!(years, collect(gmslr[scenario,:]), label="GMSLR", color=:black, linewidth=4, linestyle=:dash)
     # add current plot to vector
-    push!(all_plots, p)
+    push!(all_plots, p1)
 end
 
 # combine all plots and save
