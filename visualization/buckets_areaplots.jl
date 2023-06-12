@@ -34,17 +34,35 @@ low_gmslr  = findall(gmslr[:,end] .< quantiles[1,end])                          
 med_gmslr  = findall((gmslr[:,end] .> quantiles[2,end]) .&& (gmslr[:,end] .< quantiles[3,end])) # middle 5% of GMSLR outcomes
 high_gmslr = findall(gmslr[:,end] .> quantiles[4,end])                                          # highest 5% of GMSLR outcomes
 
-# define the index for the scenarios that will be plotted
-Random.seed!(1) # randomly select one index from vector of samples that fit criteria
-s1 = rand(intersect(early_tpeak,  low_gmslr))
-s2 = rand(intersect(middle_tpeak, low_gmslr))
-s3 = rand(intersect(late_tpeak,   low_gmslr))
-s4 = rand(intersect(early_tpeak,  med_gmslr))
-s5 = rand(intersect(middle_tpeak, med_gmslr))
-s6 = rand(intersect(late_tpeak,   med_gmslr))
-s7 = rand(intersect(early_tpeak,  high_gmslr))
-s8 = rand(intersect(middle_tpeak, high_gmslr))
-s9 = rand(intersect(late_tpeak,   high_gmslr))
+# establish the indices for samples that fit the criteria for each scenario combination
+s1 = intersect(early_tpeak,  low_gmslr)
+s2 = intersect(middle_tpeak, low_gmslr)
+s3 = intersect(late_tpeak,   low_gmslr)
+s4 = intersect(early_tpeak,  med_gmslr)
+s5 = intersect(middle_tpeak, med_gmslr)
+s6 = intersect(late_tpeak,   med_gmslr)
+s7 = intersect(early_tpeak,  high_gmslr)
+s8 = intersect(middle_tpeak, high_gmslr)
+s9 = intersect(late_tpeak,   high_gmslr)
+
+# create a dataframe that shows the number of samples that fit each scenario's criteria
+scenarios = [s1, s2, s3, s4, s5, s6, s7, s8, s9]
+peaking = ["Early", "Middle", "Late", "Early", "Middle", "Late", "Early", "Middle", "Late"]
+sea_level = ["Low", "Low", "Low", "Medium", "Medium", "Medium", "High", "High", "High"]
+df = DataFrame("Scenario" => collect(1:9), "Peaking Group" => peaking, "GMSLR Group" => sea_level, "Number of Samples" => length.(scenarios))
+#XLSX.writetable("/Users/ced227/Desktop/plots/scenario_combos.xlsx", "scenarios" => df) # save df to Excel
+
+# randomly select one index from vector of samples that fit criteria for plotting
+Random.seed!(1)
+s1 = rand(s1)
+s2 = rand(s2)
+s3 = rand(s3)
+s4 = rand(s4)
+s5 = rand(s5)
+s6 = rand(s6)
+s7 = rand(s7)
+s8 = rand(s8)
+s9 = rand(s9)
 
 # -------------------------------------------------------------------------------------------------------- #
 # --------------- Plot: Comparison of GMSLR Contributors for Different Scenarios ------------------------- #
