@@ -75,9 +75,9 @@ xticks = first(years):50:last(years)
 ylims = [(-0.9,1.2), (-0.4,4), (-0.5,8)]
 labels = ["Antarctic" "GSIC" "Greenland" "LW Storage" "Thermal Expansion"] # labels for plot legend
 # define titles for each plot
-titles = ["Early Peaking, Low GMSLR",    "Middle Peaking, Low GMSLR",    "Late Peaking, Low GMSLR",
-          "Early Peaking, Medium GMSLR", "Middle Peaking, Medium GMSLR", "Late Peaking, Medium GMSLR",
-          "Early Peaking, High GMSLR",   "Middle Peaking, High GMSLR",   "Late Peaking, High GMSLR"]
+titles = ["S1: Early Peaking, Low GMSLR",    "S2: Middle Peaking, Low GMSLR",    "S3: Late Peaking, Low GMSLR",
+          "S4: Early Peaking, Medium GMSLR", "S5: Middle Peaking, Medium GMSLR", "S6: Late Peaking, Medium GMSLR",
+          "S7: Early Peaking, High GMSLR",   "S8: Middle Peaking, High GMSLR",   "S9: Late Peaking, High GMSLR"]
 
 for (i,scenario) in enumerate(scenarios) # loop through scenarios
     j = trunc(Int64, (i-1)/3)+1 # index for yticks
