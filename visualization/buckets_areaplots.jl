@@ -80,4 +80,4 @@ end
 # combine all plots and save
 p2 = plot(all_plots..., size=(1800,1200), xticks=xticks, bottom_margin=7mm, left_margin=8mm, legend=:topleft, ann=((0,1.06), :auto))
 display(p2)
-#savefig(p2, "/Users/ced227/Desktop/plots/scenario_combos_stacked_area.png")
+#savefig(p2, "/Users/ced227/Desktop/plots/scenario_combos_stacked_area.pdf")
