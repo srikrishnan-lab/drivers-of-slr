@@ -8,7 +8,7 @@ using Plots
 include("../src/functions.jl")
 
 # ------------------------------------------- Plot 100 samples of emissions trajectories --------------------------------------------- #
-let 
+let num_samples = 100
     Random.seed!(1) # set the seed
 
     # initialize historical observations
@@ -20,18 +20,18 @@ let
     # initiate a plot
     p = scatter(xlabel="Year", ylabel="CO₂ Emissions (GtCO₂)", title="Selection of 100 Emissions Trajectories", legend=:topright)
                 #tickfontsize=20, labelfontsize=22, legendfontsize=12, titlefontsize=26, size=(1000,700), margin=5Plots.mm)
-
-    for run in 1:100 # loop through runs
-
-        # sample parameters for each run
+    
+    # loop through samples
+    for i in 1:num_samples
+        # sample parameters for current iteration
         γ_g     = rand(truncated(Normal(0.004,0.0075), 0.001, Inf))           # growth parameter
         t_peak  = trunc.(Int64, rand(truncated(Normal(2070,25), 2030, 2200))) # peaking time
         γ_d     = rand(truncated(Normal(0.07,0.05), 0.001, 0.2))              # decline parameter
-
-        # years and emissions for one run
+        
+        # years and emissions for one iteration
         t, gtco2 = emissions_curve(historical_data, γ_g=γ_g, t_peak=t_peak, γ_d=γ_d)
             
-        # add the curve for this run to the plot from the year 2022 onward
+        # add the curve for this iteration to the plot from the year 2022 onward
         idx = findfirst(2022 .∈ first(t):last(t))
         plot!(t[idx:end], gtco2[idx:end], label=:false)
     end
