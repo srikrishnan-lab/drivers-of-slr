@@ -1,7 +1,7 @@
-#= this script creates 3 plots and 1 .xlsx file showing the results from the Global Sensitivity Analysis:
-Plot 1: 4-panel stacked area plot (one for each run) showing how the contributors to first order sensitivity change over time
-Plot 2: 3-panel scatterplot (showing 3 years) that shows the first order sensitivity indices for each parameter for a specified run 
-Plot 3: same as Plot 2, except for total order sensitivities
+#= this script creates 3 types of plots and 1 .xlsx file showing the results from the Global Sensitivity Analysis:
+Plot 1: 3 or 4-panel scatterplot (depending on number of years specified) that shows the first order sensitivity indices for each parameter for a specified run
+Plot 2: same as Plot 1, except for total order sensitivities 
+Plot 3: 4-panel stacked area plot (one for each run) showing how the contributors to first order sensitivity change over time
 The last result is an .xlsx file with tables that show selected parameter interactions for 3 years: 2100, 2200, and 2300 =#
 
 using Pkg
@@ -11,130 +11,144 @@ Pkg.instantiate()
 using Plots, Measures
 include("../src/functions.jl")
 
-# initialization
-run_name = "late" # choose from "default", "early", "middle", or "late"
-years = ["2100", "2200", "2300"]
+# initialize runs
+run_names = ["default", "early", "middle", "late"]
+run_titles = ["Full Ensemble", "Early Peaking", "Middle Peaking", "Late Peaking"]
 
-# read in first and total order results
-first_order  = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$run_name", "first_order.csv")))
-first_CI     = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$run_name", "first_CI.csv")))
-total_order  = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$run_name", "total_order.csv")))
-total_CI     = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$run_name", "total_CI.csv")))
-
-# treat negative sensitivities as zero
-first_order[:,2:end] .= ifelse.(first_order[:,2:end] .< 0, 0, first_order[:,2:end])
-total_order[:,2:end] .= ifelse.(total_order[:,2:end] .< 0, 0, total_order[:,2:end])
-
-# -------------------------- Group parameters and create column for plot color scheme --------------------------- #
+# uncomment one of the two vectors below to select years
+#years = ["2070", "2100", "2120", "2150"]
+#years = ["2100", "2200", "2300"]
 
 # create groups for color scheme in plots
-groups = Dict("Emissions"           => ["gamma_g", "t_peak", "gamma_d"],
-              "Statistical Noise"   => ["sd_temp", "sd_ocean_heat", "sd_glaciers", "sd_greenland", "sd_antarctic", "sd_gmsl",
+groups = Dict("Emissions"         => ["gamma_g", "t_peak", "gamma_d"],
+            "Statistical Noise"   => ["sd_temp", "sd_ocean_heat", "sd_glaciers", "sd_greenland", "sd_antarctic", "sd_gmsl",
                                         "rho_temperature", "rho_ocean_heat", "rho_glaciers", "rho_greenland", "rho_antarctic", "rho_gmsl"],
-              "Climate System"      => ["temperature_0", "ocean_heat_0", "heat_diffusivity", "rf_scale_aerosol", "climate_sensitivity"],
-              "Carbon Cycle"        => ["CO2_0", "N2O_0", "Q10", "CO2_fertilization", "CO2_diffusivity"],
-              "Thermal Expansion"   => ["thermal_alpha", "thermal_s0"],
-              "Greenland"           => ["greenland_a", "greenland_b", "greenland_alpha", "greenland_beta", "greenland_v0"],
-              "Glaciers and SIC"    => ["glaciers_beta0", "glaciers_n", "glaciers_v0", "glaciers_s0"],
-              "Antarctic"           => ["antarctic_s0", "antarctic_gamma", "antarctic_alpha", "antarctic_mu", "antarctic_nu",
+            "Climate System"      => ["temperature_0", "ocean_heat_0", "heat_diffusivity", "rf_scale_aerosol", "climate_sensitivity"],
+            "Carbon Cycle"        => ["CO2_0", "N2O_0", "Q10", "CO2_fertilization", "CO2_diffusivity"],
+            "Thermal Expansion"   => ["thermal_alpha", "thermal_s0"],
+            "Greenland"           => ["greenland_a", "greenland_b", "greenland_alpha", "greenland_beta", "greenland_v0"],
+            "Glaciers and SIC"    => ["glaciers_beta0", "glaciers_n", "glaciers_v0", "glaciers_s0"],
+            "Antarctic"           => ["antarctic_s0", "antarctic_gamma", "antarctic_alpha", "antarctic_mu", "antarctic_nu",
                                         "antarctic_precip0", "antarctic_kappa", "antarctic_flow0", "antarctic_runoff_height0",
                                         "antarctic_c", "antarctic_bed_height0", "antarctic_slope", "antarctic_lambda",
                                         "antarctic_temp_threshold", "anto_alpha", "anto_beta"],
-              "Land Water Storage"  => ["lw_random_sample"])
+            "Land Water Storage"  => ["lw_random_sample"])
 
-# preallocate space for new column of parameter groupings
-groups_col = Array{String}(undef, length(first_order.parameter))
+# loop through runs
+for (i,run) in enumerate(run_names)
 
-# loop through each key-value pair in dictionary
-for (key,value) in groups
-    # find indices for current parameter group
-    indices = findall((in)(value), first_order.parameter)
-    # fill the indices with the name of the group
-    groups_col[indices] .= key
-end
+    run_title = run_titles[i] # establish current run
 
-# add a column for the parameter groupings
-insertcols!(first_order, 1, :group => groups_col)
-insertcols!(total_order, 1, :group => groups_col)
+    # read in first and total order results
+    first_order  = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$run", "first_order.csv")))
+    first_CI     = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$run", "first_CI.csv")))
+    total_order  = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$run", "total_order.csv")))
+    total_CI     = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$run", "total_CI.csv")))
 
-# ---------------------------- Plot first order sensitivities ------------------------------------------------- #
-# plots for the run specified in "run_name"
-all_plts = []
+    # treat negative sensitivities as zero
+    first_order[:,2:end] .= ifelse.(first_order[:,2:end] .< 0, 0, first_order[:,2:end])
+    total_order[:,2:end] .= ifelse.(total_order[:,2:end] .< 0, 0, total_order[:,2:end])
 
-for year in years
-    plt = scatter(first_order.parameter, first_order[:,"$year"], yerror = first_CI[:,"$year"], 
-                  group=first_order.group, palette=:tab10, xticks=:all, xrotation=45,
-                  title = "$year", xlabel="Parameter", ylabel="Sensitivity", legend=:true,
-                  markersize=5, markerstrokewidth=0.5, tickfontsize=6, legendfontsize=6,
-                  bottom_margin=7mm, left_margin=5mm)
-    push!(all_plts, plt)
-end
-#ylim=(-0.03,0.82), yticks=0:0.1:0.8,
+    # -------------------------- Group parameters and create column for plot color scheme --------------------------- #
 
-p = plot(all_plts..., plot_title="First Order Sensitivities", layout=(3,1), size=(900,1200))
-display(p)
-#savefig(p, "/Users/ced227/Desktop/plots/stratefied_gsa/UPDATE_first_order.pdf")
+    # preallocate space for new column of parameter groupings
+    groups_col = Array{String}(undef, length(first_order.parameter))
 
-# ---------------------------- Plot total order sensitivities ------------------------------------------------- #
-# plots for the run specified in "run_name"
-all_plts = []
-
-for year in years
-    plt = scatter(total_order.parameter, total_order[:,"$year"], yerror = total_CI[:,"$year"], 
-                  group=total_order.group, palette=:tab10, xticks=:all, xrotation=45,
-                  title = "$year", xlabel="Parameter", ylabel="Sensitivity", legend=:true,
-                  markersize=5, markerstrokewidth=0.5, tickfontsize=6, legendfontsize=6,
-                  bottom_margin=7mm, left_margin=5mm)
-    push!(all_plts, plt)
-end
-#ylim=(-0.02,0.62), yticks=0:0.1:0.6,
-
-p = plot(all_plts..., plot_title="Total Order Sensitivities", layout=(3,1), size=(900,1200))
-display(p)
-#savefig(p, "/Users/ced227/Desktop/plots/stratefied_gsa/UPDATE_total_order.pdf")
-
-# ---------------------------- Plot stacked area plots for stratefied sensitivity analysis -------------------- #
-# plots for all runs: default, early, middle, and late
-all_plts = []
-gsa_runs = ["default", "early", "middle", "late"]
-titles = ["Full Ensemble", "Early Peaking", "Middle Peaking", "Late Peaking"]
-
-for (i, item) in enumerate(gsa_runs) # loop through each run
-    # read in first order results for current run
-    current_run = gsa_runs[i]
-    gsa_first = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$current_run", "first_order.csv")))
-    
-    # add a column for parameter groups
-    group_col = Array{String}(undef, length(gsa_first.parameter)) # preallocate space
-    for (key,value) in groups # loop through dictionary
-        indices = findall((in)(value), gsa_first.parameter) # find indices for current group
-        group_col[indices] .= key # fill the indices with the name of current group
+    # loop through each key-value pair in dictionary
+    for (key,value) in groups
+        # find indices for current parameter group
+        indices = findall((in)(value), first_order.parameter)
+        # fill the indices with the name of the group
+        groups_col[indices] .= key
     end
-    insertcols!(gsa_first, 1, :group => group_col) # add the column
 
-    # create df with sums of first order sensitivities for each group for each year
-    group_sums = combine(groupby(gsa_first, :group), names(gsa_first, Not([:group, :parameter])) .=> sum, renamecols=false)
-    group_sums[:,2:end] .= ifelse.(group_sums[:,2:end] .< 0, 0, group_sums[:,2:end]) # treat negative sensitivities as zero for each group
-    group_sums = group_sums[[8,3,4,1,7,6,9,2,5], :] # reorder rows for consistent color scheme
+    # add a column for the parameter groupings
+    insertcols!(first_order, 1, :group => groups_col)
+    insertcols!(total_order, 1, :group => groups_col)
 
-    # normalize sensitivities so that they add up to 1 each year
-    totals_df = combine(group_sums, Not(:group) .=> sum; renamecols=false) # sum of first order sensitivities for each year
-    normalized_df = group_sums[:,2:end] ./ totals_df # divide each group's value by the sum for each year
-    insertcols!(normalized_df, 1, :group => group_sums.group) # re-add group column
+    # ---------------------------- Plot first order sensitivities ------------------------------------------------- #
+    # plots for the current iteration's run
+    all_plts = []
 
-    # intialize years and legend labels
-    all_years = parse.(Int64, names(normalized_df)[2:end]) # years (x-axis)
-    labels = permutedims(vcat(normalized_df.group)) # group names
+    for year in years
+        plt = scatter(first_order.parameter, first_order[:,"$year"], yerror = first_CI[:,"$year"], 
+                    group=first_order.group, palette=:tab10, xticks=:all, xrotation=45,
+                    title = "$year", xlabel="Parameter", ylabel="Sensitivity", legend=:true,
+                    markersize=5, markerstrokewidth=0.5, tickfontsize=6, legendfontsize=6,
+                    bottom_margin=7mm, left_margin=10mm)
+        push!(all_plts, plt)
+    end
+    #ylim=(-0.03,0.82), yticks=0:0.1:0.8,
 
-    # create a stacked area plot for contributors to first order sensitivity
-    plt = plot(title=titles[i], xlabel="Year", ylabel="First Order Index", bottom_margin=7mm, left_margin=5mm, legend=:right)
-    areaplot!(all_years, Matrix(normalized_df[:,2:end])', label=labels, palette=:tab10, alpha=1, fillalpha=0.7, legendfontsize=6)
-    push!(all_plts, plt) # add current plot to array
+    p = plot(all_plts..., plot_title="First Order Sensitivities: $run_title", layout=(length(years),1),
+            size=(900,400*length(years)), ann=((0,1.14), :auto))
+    display(p)
+    #savefig(p, "/Users/ced227/Desktop/plots/gsa_plots/$run-first_order.pdf")
+
+    # ---------------------------- Plot total order sensitivities ------------------------------------------------- #
+    # plots for the current iteration's run
+    all_plts = []
+
+    for year in years
+        plt = scatter(total_order.parameter, total_order[:,"$year"], yerror = total_CI[:,"$year"], 
+                    group=total_order.group, palette=:tab10, xticks=:all, xrotation=45,
+                    title = "$year", xlabel="Parameter", ylabel="Sensitivity", legend=:true,
+                    markersize=5, markerstrokewidth=0.5, tickfontsize=6, legendfontsize=6,
+                    bottom_margin=7mm, left_margin=10mm)
+        push!(all_plts, plt)
+    end
+    #ylim=(-0.02,0.62), yticks=0:0.1:0.6,
+
+    p = plot(all_plts..., plot_title="Total Order Sensitivities: $run_title", layout=(length(years),1), 
+            size=(900,400*length(years)), ann=((0,1.14), :auto))
+    display(p)
+    #savefig(p, "/Users/ced227/Desktop/plots/gsa_plots/$run-total_order.pdf")
 end
 
-p = plot(all_plts..., plot_title="First Order Sensitivity Stacked Area Plots", layout=(2,2), size=(1200,900))
-display(p)
-#savefig(p, "/Users/ced227/Desktop/plots/stacked_area.pdf")
+# ---------------------------- Plot stacked area plots for first order sensitivity indices -------------------- #
+let 
+    # plots for all runs: default, early, middle, and late
+    all_plts = []
+    gsa_runs = ["default", "early", "middle", "late"]
+    titles = ["Full Ensemble", "Early Peaking", "Middle Peaking", "Late Peaking"]
+
+    for (i, item) in enumerate(gsa_runs) # loop through each run
+        # read in first order results for current run
+        current_run = gsa_runs[i]
+        gsa_first = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "$current_run", "first_order.csv")))
+        
+        # add a column for parameter groups
+        group_col = Array{String}(undef, length(gsa_first.parameter)) # preallocate space
+        for (key,value) in groups # loop through dictionary
+            indices = findall((in)(value), gsa_first.parameter) # find indices for current group
+            group_col[indices] .= key # fill the indices with the name of current group
+        end
+        insertcols!(gsa_first, 1, :group => group_col) # add the column
+
+        # create df with sums of first order sensitivities for each group for each year
+        group_sums = combine(groupby(gsa_first, :group), names(gsa_first, Not([:group, :parameter])) .=> sum, renamecols=false)
+        group_sums[:,2:end] .= ifelse.(group_sums[:,2:end] .< 0, 0, group_sums[:,2:end]) # treat negative sensitivities as zero for each group
+        group_sums = group_sums[[8,3,4,1,7,6,9,2,5], :] # reorder rows for consistent color scheme
+
+        # normalize sensitivities so that they add up to 1 each year
+        totals_df = combine(group_sums, Not(:group) .=> sum; renamecols=false) # sum of first order sensitivities for each year
+        normalized_df = group_sums[:,2:end] ./ totals_df # divide each group's value by the sum for each year
+        insertcols!(normalized_df, 1, :group => group_sums.group) # re-add group column
+
+        # intialize years and legend labels
+        all_years = parse.(Int64, names(normalized_df)[2:end]) # years (x-axis)
+        labels = permutedims(vcat(normalized_df.group)) # group names
+
+        # create a stacked area plot for contributors to first order sensitivity
+        plt = plot(title=titles[i], xlabel="Year", ylabel="First Order Index", bottom_margin=7mm, left_margin=5mm, legend=:right)
+        areaplot!(all_years, Matrix(normalized_df[:,2:end])', label=labels, palette=:tab10, alpha=1, fillalpha=0.7, legendfontsize=6)
+        push!(all_plts, plt) # add current plot to array
+    end
+
+    p = plot(all_plts..., plot_title="First Order Sensitivity Stacked Area Plots", layout=(2,2), size=(1200,900))
+    display(p)
+    #savefig(p, "/Users/ced227/Desktop/plots/stacked_area.pdf")
+end
 
 # ---------------------------- Tables of second order sensitivities -------------------------------------------- #
 # plots for the "default" run
@@ -159,6 +173,8 @@ param_pairs = [("gamma_g","t_peak"), # vector of tuples with parameter pairs we 
             ("gamma_d","antarctic_alpha"),
             ("gamma_d","lw_random_sample")]
 
+# define years for table
+years = ["2100", "2200", "2300"]
 # preallocate storage for sensitivity indices and confidence interval bounds
 estimates    = Matrix{Any}(undef, length(param_pairs), length(years))
 lower_bounds = Matrix{Any}(undef, length(param_pairs), length(years))
