@@ -145,9 +145,9 @@ let
         push!(all_plts, plt) # add current plot to array
     end
 
-    p = plot(all_plts..., plot_title="First Order Sensitivity Stacked Area Plots", layout=(2,2), size=(1200,900))
+    p = plot(all_plts..., plot_title="First Order Sensitivity Stacked Area Plots", layout=(2,2), size=(1200,900), ann=((0,1.06), :auto))
     display(p)
-    #savefig(p, "/Users/ced227/Desktop/plots/stacked_area.pdf")
+    #savefig(p, "/Users/ced227/Desktop/plots/firstorder_stacked_area.pdf")
 end
 
 # ---------------------------- Tables of second order sensitivities -------------------------------------------- #
