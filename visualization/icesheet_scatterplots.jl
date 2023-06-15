@@ -32,7 +32,7 @@ colors = [:lightblue, :seagreen4, :plum4]
 all_plots1 = []
 for year in years # loop through years
     # initialize scatterplot
-    p1 = scatter(title="$year", xlabel="Global Mean Temperature Anomaly (K)", ylabel="Global Mean Sea Level Anomaly (m)")
+    p1 = scatter(title="$year", xlabel="Global Mean Temperature Anomaly (K)", ylabel="Global Mean Sea Level Contribution (m)")
     for (i,bucket) in enumerate(buckets) # loop through peaking groups
         bucket_name = bucket_names[i]
         scatter!(p1, temperature[bucket,"$year"], antarctic[bucket,"$year"], label="$bucket_name", color=colors[i],
@@ -49,7 +49,7 @@ p2 = plot(all_plots1..., plot_title="Antarctic Ice Sheet Melt vs. Temperature", 
 all_plots2 = []
 for year in years # loop through years
     # initialize scatterplot
-    p3 = scatter(title="$year", xlabel="Global Mean Temperature Anomaly (K)", ylabel="Global Mean Sea Level Anomaly (m)")
+    p3 = scatter(title="$year", xlabel="Global Mean Temperature Anomaly (K)", ylabel="Global Mean Sea Level Contribution (m)")
     for (i,bucket) in enumerate(buckets) # loop through peaking groups
         bucket_name = bucket_names[i]
         scatter!(p3, temperature[bucket,"$year"], greenland[bucket,"$year"], label="$bucket_name", color=colors[i],
@@ -67,4 +67,4 @@ p4 = plot(all_plots2..., plot_title="Greenland Ice Sheet Melt vs. Temperature", 
 all_plots = [p2, p4]
 p5 = plot(all_plots..., layout=(length(all_plots),1), size=(1500,1200))
 display(p5)
-#savefig(p5, "/Users/ced227/Desktop/plots/icesheet_scatterplots.pdf")
+savefig(p5, "/Users/ced227/Desktop/plots/icesheet_scatterplots.pdf")
