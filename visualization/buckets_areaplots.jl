@@ -50,7 +50,7 @@ scenarios = [s1, s2, s3, s4, s5, s6, s7, s8, s9]
 scenario_names = ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9"]
 sea_level = ["Low", "Low", "Low", "Medium", "Medium", "Medium", "High", "High", "High"]
 peaking = ["Early", "Middle", "Late", "Early", "Middle", "Late", "Early", "Middle", "Late"]
-df = DataFrame("Scenario Group" => scenario_names, "GMSLR Group" => sea_level, "Peaking Group" => peaking, "Number of Samples" => length.(scenarios))
+df = DataFrame("Scenario Combination" => scenario_names, "GMSLR Group" => sea_level, "Peaking Group" => peaking, "Number of Samples" => length.(scenarios))
 #XLSX.writetable("/Users/ced227/Desktop/plots/scenario_combos.xlsx", "scenarios" => df) # save df to Excel
 
 # randomly select one index from vector of samples that fit criteria for plotting
