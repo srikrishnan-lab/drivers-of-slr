@@ -1,4 +1,4 @@
-#= this script divides the results of model_ensemble.jl into three buckets of peaking time and three buckets of GMSLR outcomes.
+#= this script divides the results of model_ensemble.jl into scenario combinations based on three buckets of GMSLR outcomes and three buckets of peaking time.
 Then plots stacked area plots for ONE sample (doesn't show uncertainty) for each combination of peaking time & GMSLR (9 scenario combinations total). =#
 
 using Pkg
@@ -23,33 +23,34 @@ lw_storage          = DataFrame(load(joinpath(@__DIR__, "..", "results", "$outpu
 thermal_expansion   = DataFrame(load(joinpath(@__DIR__, "..", "results", "$output_dir", "thermal_expansion.csv")))
 ocean_heat          = DataFrame(load(joinpath(@__DIR__, "..", "results", "$output_dir", "ocean_heat.csv")))
 
-# establish indices for different buckets of peaking times
-early_tpeak  = findall(parameters.t_peak .< 2050)           # before 2050
-middle_tpeak = findall(2050 .<= parameters.t_peak .< 2100)  # at least 2050 and before 2100
-late_tpeak   = findall(parameters.t_peak .>= 2100)          # at least 2100
-
 # establish indices for different buckets of GMSLR
 quantiles  = mapslices(x -> quantile(x, [0.05, 0.475, 0.525, 0.95]), Matrix(gmslr), dims=1) # 5%, 47.5%, 52.5%, and 95% CI
 low_gmslr  = findall(gmslr[:,end] .< quantiles[1,end])                                          # lowest 5% of GMSLR outcomes
 med_gmslr  = findall((gmslr[:,end] .> quantiles[2,end]) .&& (gmslr[:,end] .< quantiles[3,end])) # middle 5% of GMSLR outcomes
 high_gmslr = findall(gmslr[:,end] .> quantiles[4,end])                                          # highest 5% of GMSLR outcomes
 
+# establish indices for different buckets of peaking times
+early_tpeak  = findall(parameters.t_peak .< 2050)           # before 2050
+middle_tpeak = findall(2050 .<= parameters.t_peak .< 2100)  # at least 2050 and before 2100
+late_tpeak   = findall(parameters.t_peak .>= 2100)          # at least 2100
+
 # establish the indices for samples that fit the criteria for each scenario combination
-s1 = intersect(early_tpeak,  low_gmslr)
-s2 = intersect(middle_tpeak, low_gmslr)
-s3 = intersect(late_tpeak,   low_gmslr)
-s4 = intersect(early_tpeak,  med_gmslr)
-s5 = intersect(middle_tpeak, med_gmslr)
-s6 = intersect(late_tpeak,   med_gmslr)
-s7 = intersect(early_tpeak,  high_gmslr)
-s8 = intersect(middle_tpeak, high_gmslr)
-s9 = intersect(late_tpeak,   high_gmslr)
+s1 = intersect(low_gmslr,  early_tpeak)
+s2 = intersect(low_gmslr,  middle_tpeak)
+s3 = intersect(low_gmslr,  late_tpeak)
+s4 = intersect(med_gmslr,  early_tpeak)
+s5 = intersect(med_gmslr,  middle_tpeak)
+s6 = intersect(med_gmslr,  late_tpeak)
+s7 = intersect(high_gmslr, early_tpeak)
+s8 = intersect(high_gmslr, middle_tpeak)
+s9 = intersect(high_gmslr, late_tpeak)
 
 # create a dataframe that shows the number of samples that fit each scenario's criteria
 scenarios = [s1, s2, s3, s4, s5, s6, s7, s8, s9]
-peaking = ["Early", "Middle", "Late", "Early", "Middle", "Late", "Early", "Middle", "Late"]
+scenario_names = ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9"]
 sea_level = ["Low", "Low", "Low", "Medium", "Medium", "Medium", "High", "High", "High"]
-df = DataFrame("Scenario" => collect(1:9), "Peaking Group" => peaking, "GMSLR Group" => sea_level, "Number of Samples" => length.(scenarios))
+peaking = ["Early", "Middle", "Late", "Early", "Middle", "Late", "Early", "Middle", "Late"]
+df = DataFrame("Scenario Group" => scenario_names, "GMSLR Group" => sea_level, "Peaking Group" => peaking, "Number of Samples" => length.(scenarios))
 #XLSX.writetable("/Users/ced227/Desktop/plots/scenario_combos.xlsx", "scenarios" => df) # save df to Excel
 
 # randomly select one index from vector of samples that fit criteria for plotting
@@ -75,9 +76,9 @@ xticks = first(years):50:last(years)
 ylims = [(-0.9,1.2), (-0.4,4), (-0.5,8)]
 labels = ["Antarctic" "GSIC" "Greenland" "LW Storage" "Thermal Expansion"] # labels for plot legend
 # define titles for each plot
-titles = ["S1: Early Peaking, Low GMSLR",    "S2: Middle Peaking, Low GMSLR",    "S3: Late Peaking, Low GMSLR",
-          "S4: Early Peaking, Medium GMSLR", "S5: Middle Peaking, Medium GMSLR", "S6: Late Peaking, Medium GMSLR",
-          "S7: Early Peaking, High GMSLR",   "S8: Middle Peaking, High GMSLR",   "S9: Late Peaking, High GMSLR"]
+titles = ["S1: Low GMSLR, Early Peaking",    "S2: Low GMSLR, Middle Peaking",    "S3: Low GMSLR, Late Peaking",
+          "S4: Medium GMSLR, Early Peaking", "S5: Medium GMSLR, Middle Peaking", "S6: Medium GMSLR, Late Peaking",
+          "S7: High GMSLR, Early Peaking",   "S8: High GMSLR, Middle Peaking",   "S9: High GMSLR, Late Peaking"]
 
 for (i,scenario) in enumerate(scenarios) # loop through scenarios
     j = trunc(Int64, (i-1)/3)+1 # index for yticks
