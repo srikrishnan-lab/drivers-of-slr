@@ -64,8 +64,12 @@ let
         p2 = plot(all_years..., layout=(1,length(years)), legend=:false)
         push!(all_outputs, p2)
     end
+    # set up values that change depending on number of years plotted
+    title_size  = length(years)==3 ? 16 : 13 # title font size
+    size        = length(years)==3 ? 12 : 11 # label/tick font size
     # combined plots for all outputs
-    p3 = plot(all_outputs..., layout=(3,1), size=(1800,1200), bottom_margin=5mm, left_margin=10mm, ann=((0,1.06),:auto), dpi=600)
+    p3 = plot(all_outputs..., layout=(3,1), size=(1800,1200), bottom_margin=5mm, left_margin=10mm, ann=((0,1.06),:auto), dpi=600,
+              titlefontsize=title_size, tickfontsize=size, labelfontsize=size)
     display(p3)
     #savefig(p3, "/Users/ced227/Desktop/plots/rf_temp_gmslr_boxplots.png")
 end
@@ -103,9 +107,13 @@ let
         p2 = plot(all_buckets..., layout=(1,3), legend=:false)
         push!(all_years, p2)
     end
+    # set up values that change depending on number of years plotted
+    loc         = length(years)==3 ? (0,1.06) : (0,1.09) # location of panel labels
+    title_size  = length(years)==3 ? 16 : 15 # title font size
+    size        = length(years)==3 ? 11 : 10 # label/tick font size
     # combined plots for all years
-    loc = length(years)==3 ? (0,1.06) : (0,1.09) # location of panel labels
-    p3 = plot(all_years..., layout=(length(years),1), size=(1800,1200), bottom_margin=5mm, left_margin=10mm, ylabelfontsize=9, ann=(loc,:auto), dpi=600)
+    p3 = plot(all_years..., layout=(length(years),1), size=(1800,1200), bottom_margin=5mm, left_margin=10mm, ann=(loc,:auto), dpi=600,
+              titlefontsize=title_size, tickfontsize=size, labelfontsize=size)
     display(p3)
     #savefig(p3, "/Users/ced227/Desktop/plots/slr_boxplots.png")
 end
