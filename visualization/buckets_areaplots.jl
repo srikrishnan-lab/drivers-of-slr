@@ -100,3 +100,45 @@ end
 p2 = plot(all_plots..., size=(1800,1200), xticks=xticks, bottom_margin=7mm, left_margin=8mm, legend=:topleft, ann=((0,1.06), :auto))
 display(p2)
 #savefig(p2, "/Users/ced227/Desktop/plots/scenario_combos_stacked_area.pdf")
+
+# -------------------------------------------------------------------------------------------------------- #
+# ---------------- Analysis of Parameter/Outcome Percentiles for each Scenario --------------------------- #
+# -------------------------------------------------------------------------------------------------------- #
+let
+    cum_emissions = sum.(eachrow(emissions)) # cumulative emissions in 2300 for all samples
+    percentile_emissions = zeros(length(scenarios)) # percentiles for cumulative emissions
+    percentile_temps = zeros(length(scenarios)) # percentiles for temperature anomaly in 2300
+
+    # create df and add necessary columns
+    param_names = names(parameters)
+    all_percentiles = DataFrame([scenario => zeros(length(param_names)) for scenario in scenario_names])
+    insertcols!(all_percentiles, 1, :parameter => param_names)
+
+    for (i, scenario) in enumerate(scenarios) # loop through scenario indices
+        idx = scenario # establish index of sample we want to consider
+
+        for (j, param) in enumerate(param_names) # loop through parameters
+            # find the value and percentile for the sample
+            value = parameters[idx, param]
+            percentile = 100 * mean(parameters[:, param] .< value)
+            # add the percentile to df
+            all_percentiles[j,i+1] = percentile
+        end
+
+        # include percentile for cumulative emissions
+        percentile_emissions[i] = 100 * mean(cum_emissions .< cum_emissions[idx])
+        # include percentile for temperature in 2300
+        percentile_temps[i] = 100 * mean(temperature[:,end] .< temperature[:,end][idx])
+
+        if i == length(scenarios) # if we're on the last run
+            # insert emissions percentiles into first row of all_percentiles df 
+            insert!.(eachcol(all_percentiles), 1, ["cumulative_emissions", percentile_emissions...])
+            # insert temperature percentiles into first row of all_percentiles df 
+            insert!.(eachcol(all_percentiles), 1, ["temperature", percentile_temps...])
+        end
+    end
+    show(all_percentiles, allrows=true)
+end
+# get cumulative emissions or temperature for a certain sample
+#cum_emissions[s1]
+#temperature[:,end][s1]
