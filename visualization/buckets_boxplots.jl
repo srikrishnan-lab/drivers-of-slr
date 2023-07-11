@@ -117,3 +117,69 @@ let
     display(p3)
     #savefig(p3, "/Users/ced227/Desktop/plots/slr_boxplots.png")
 end
+
+# -------------------------------------------------------------------------------------------------------- #
+# -------------- Analysis of Parameter/Outcome Percentiles for each Peaking Group ------------------------ #
+# -------------------------------------------------------------------------------------------------------- #
+let
+    # intialize variables and df
+    groups = [early_indices, middle_indices, late_indices]
+    group_names = ["early", "middle", "late"]
+    param_names = names(parameters)
+    all_percentiles = DataFrame([group => zeros(length(param_names)) for group in group_names])
+    insertcols!(all_percentiles, 1, :parameter => param_names)
+
+    # different percentiles to consider
+    percentile_emissions    = zeros(length(groups))
+    percentile_temps        = zeros(length(groups))
+    percentile_gmslr        = zeros(length(groups))
+    percentile_greenland    = zeros(length(groups))
+    percentile_antarctic    = zeros(length(groups))
+    percentile_gsic         = zeros(length(groups))
+    percentile_lws          = zeros(length(groups))
+    percentile_te           = zeros(length(groups))
+
+    for (i, group) in enumerate(groups) # loop through peaking group indices
+        outcome = gmslr # change desired outcome as needed (i.e., gmslr, antarctic)
+        # establish index for maximum value of outcome in 2300 for current group
+        idx = findfirst(maximum(outcome[group, end]) .∈ outcome[group, end])
+        # print maximum value for each group
+        current_group = group_names[i]
+        println("$current_group: ", maximum(outcome[group, end]))
+        # print cumulative emissions for each group
+        cum_emissions = sum.(eachrow(emissions[group,:])) # cumulative emissions in 2300 for current peaking group
+        println("$current_group-->emissions: ", cum_emissions[idx])
+        
+        for (j, param) in enumerate(param_names) # loop through parameters
+            # find the value and percentile for the sample
+            params_subset = parameters[group,:] # df just with current peaking group
+            value = params_subset[idx, param]
+            percentile = 100 * mean(params_subset[:, param] .< value)
+            # add the percentile to df
+            all_percentiles[j,i+1] = percentile
+        end
+
+        # add percentile for each metric in 2300
+        percentile_emissions[i] = 100 * mean(cum_emissions .< cum_emissions[idx])
+        percentile_temps[i]     = 100 * mean(temperature[group,end] .< temperature[group,end][idx])
+        percentile_gmslr[i]     = 100 * mean(gmslr[group,end] .< gmslr[group,end][idx])
+        percentile_greenland[i] = 100 * mean(greenland[group,end] .< greenland[group,end][idx])
+        percentile_antarctic[i] = 100 * mean(antarctic[group,end] .< antarctic[group,end][idx])
+        percentile_gsic[i]      = 100 * mean(gsic[group,end] .< gsic[group,end][idx])
+        percentile_lws[i]       = 100 * mean(lw_storage[group,end] .< lw_storage[group,end][idx])
+        percentile_te[i]        = 100 * mean(thermal_expansion[group,end] .< thermal_expansion[group,end][idx])
+
+        if i == length(groups) # if we're on the last run
+            # insert each percentile vector into first row of all_percentiles df 
+            insert!.(eachcol(all_percentiles), 1, ["cumulative_emissions", percentile_emissions...])
+            insert!.(eachcol(all_percentiles), 1, ["temperature", percentile_temps...])
+            insert!.(eachcol(all_percentiles), 1, ["gmslr", percentile_gmslr...])
+            insert!.(eachcol(all_percentiles), 1, ["greenland_slr", percentile_greenland...])
+            insert!.(eachcol(all_percentiles), 1, ["antarctic_slr", percentile_antarctic...])
+            insert!.(eachcol(all_percentiles), 1, ["gsic_slr", percentile_gsic...])
+            insert!.(eachcol(all_percentiles), 1, ["lw_storage_slr", percentile_lws...])
+            insert!.(eachcol(all_percentiles), 1, ["thermal_expansion_slr", percentile_te...])
+        end
+    end
+    show(all_percentiles, allrows=true)
+end
