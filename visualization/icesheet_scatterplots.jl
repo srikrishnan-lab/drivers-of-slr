@@ -8,14 +8,14 @@ Pkg.instantiate()
 using Plots, Measures
 include("../src/functions.jl")
 
-run = "default"
+run_name = "default"
 years = ["2100", "2200", "2300"]
 
 # get the relevant results
-parameters          = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run", "parameters.csv")))
-temperature         = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run", "temperature.csv")))
-antarctic           = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run", "antarctic.csv")))
-greenland           = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run", "greenland.csv")))
+parameters          = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run_name", "parameters.csv")))
+temperature         = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run_name", "temperature.csv")))
+antarctic           = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run_name", "antarctic.csv")))
+greenland           = DataFrame(load(joinpath(@__DIR__, "..", "results", "$run_name", "greenland.csv")))
 
 # establish indices for different buckets of peaking times
 early  = findall(parameters.t_peak .< 2050)           # before 2050
@@ -67,4 +67,4 @@ p4 = plot(all_plots2..., plot_title="Greenland Ice Sheet Melt vs. Temperature", 
 all_plots = [p2, p4]
 p5 = plot(all_plots..., layout=(length(all_plots),1), size=(1500,1200))
 display(p5)
-savefig(p5, "/Users/ced227/Desktop/plots/icesheet_scatterplots.pdf")
+#savefig(p5, "/Users/ced227/Desktop/plots/icesheet_scatterplots.pdf")
