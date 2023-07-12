@@ -197,7 +197,7 @@ scatter!(years, match_inputs(), markersize=2, label="Closest RCP")
 function emissions_curve(historical_data::DataFrame; γ_g=0.004, t_peak=2070, γ_d=0.07, start_year=1850, end_year=2300)
 
     # allocate space for years and emissions
-    model_years = collect(start_year:end_year)
+    model_years = collect(1850:2300) # full range of years, will slice at the end if needed
     num_years = length(model_years)
     t = zeros(Int64, num_years) # years
     gtco2 = zeros(num_years) # emissions
@@ -232,7 +232,9 @@ function emissions_curve(historical_data::DataFrame; γ_g=0.004, t_peak=2070, γ
 
     end
 
-    return t, gtco2 # return years and emissions
+    # return specified start and end years
+    indices = findall((in)(start_year:end_year), 1850:2300)
+    return t[indices], gtco2[indices] # return years and emissions
 
 end
 
