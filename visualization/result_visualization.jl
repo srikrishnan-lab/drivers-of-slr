@@ -40,7 +40,7 @@ future = findall((in)(2022:2300), first(years):last(years)) # just future data (
 # -------------------------------------------------------------------------------------------------------- #
 
 # plot of emissions: values for current run, as well as 95% CI
-p1 = plot(title="CO₂ Emissions", xlabel="Year", ylabel="Total CO₂ Emissions (GtCO₂/yr)", legend=:topleft, xticks=xticks, ylim=(0,100))
+p1 = plot(title="CO₂ Emissions", xlabel="Year", ylabel="CO₂ Emissions (GtCO₂/yr)", legend=:topleft, xticks=xticks, ylim=(0,100))
 plot!(years, collect(emissions[i,:]), label="Emissions", color=:blue, linewidth=2)
 co2_quantiles = mapslices(x -> quantile(x, [0.025, 0.975]), Matrix(emissions), dims=1) # 95% credible interval
 plot!(years, co2_quantiles[1,:], fillrange=co2_quantiles[2,:], fillalpha=0.4, alpha= 0.35, color=:blue, label="95% CI")
@@ -80,7 +80,7 @@ display(all_plots1)
 # -------------------------------------------------------------------------------------------------------- #
 let
     # four panels of plot
-    p1 = plot(title="Selected Emissions Trajectories", xlabel="Year", ylabel="Total CO₂ Emissions (GtCO₂/yr)") # p1 = emissions
+    p1 = plot(title="Selected Emissions Trajectories", xlabel="Year", ylabel="CO₂ Emissions (GtCO₂/yr)") # p1 = emissions
     p2 = plot(title="Radiative Forcing", xlabel="Year", ylabel="Global Radiative Forcing (W/m²)", ylim=(-2,12)) # p2 = radiative forcing
     p3 = plot(title="Temperature", xlabel="Year", ylabel="Global Mean Temperature Anomaly (K)", ylim=(-1,9)) # p3 = temperature
     p4 = plot(title="Global Mean Sea Level", xlabel="Year", ylabel="Global Mean Sea Level Anomaly (m)") # p4 = global mean sea level
