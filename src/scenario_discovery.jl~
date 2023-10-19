@@ -1,0 +1,114 @@
+# scenario_discovery.jl: code to take SLR ensemble and construct a classification tree to find high/low outcomes
+
+import Pkg
+Pkg.activate(".")
+Pkg.instantiate()
+
+using CSVFiles
+using Statistics
+using AbstractTrees
+using TreeRecipe
+using Distributed
+using Plots
+
+# set up distributed environment for Shapley index computation
+ncores = parse(Int, ENV["SLURM_CPUS_ON_NODE"])
+print("Using $(ncores) cores...")
+addprocs(ncores, exeflags="--project=$(Base.active_project())")
+
+@everywhere begin
+    using DataFrames
+    using ShapML
+    using MLJ
+    using DecisionTree
+    using MLJDecisionTreeInterface
+end
+
+# Assume that we call this script from the project folder
+output_dir = "output/default"
+slr_out = DataFrame(CSVFiles.load(joinpath(output_dir, "gmslr.csv")))
+emissions = DataFrame(CSVFiles.load(joinpath(output_dir, "emissions.csv")))
+parameters = DataFrame(CSVFiles.load(joinpath(output_dir, "parameters.csv")))
+
+RFReg = @load RandomForestRegressor pkg=DecisionTree
+RFClass = @load DecisionTreeClassifier pkg=DecisionTree
+
+## Start with SLR outcomes in 2070
+yrs = [2075, 2100, 2125]
+
+features = parameters
+
+function classify_drivers(yr, features)
+    # Get cumulative emissions after 2020
+    year_idx = collect(2021:yr+1) .- 1850 # indices of columns from 2000 through 2100
+#    cum_emissions = cumsum(Matrix(emissions[:, year_idx]), dims=2)[:, end]
+    # add cumulative emissions to key features
+    # Label SLR outcomes as low and high based on quantiles
+    low_threshold = quantile(slr_out[:, Symbol(yr)], .2)
+    print("Low Threshold in $(yr): $(low_threshold)\n")
+    hi_threshold = quantile(slr_out[:, Symbol(yr)], .8)
+    print("High Threshold in $(yr): $(hi_threshold)\n")
+    slr_lo_labels = ifelse.(low_threshold .> slr_out[:, Symbol(yr)], "low", "normal")
+    slr_lo_labels = coerce(slr_lo_labels, Multiclass)
+    slr_hi_labels = ifelse.(hi_threshold .< slr_out[:, Symbol(yr)], "high", "normal")
+    slr_hi_labels = coerce(slr_hi_labels, Multiclass)
+    
+    # classify extreme low outcomes
+    slr_lo_tree = RFClass(max_depth = 3, post_prune=true, min_samples_leaf = 100)
+    slr_lo_mach = machine(slr_lo_tree, features, slr_lo_labels)
+    MLJ.fit!(slr_lo_mach)
+    wrap_lo = DecisionTree.wrap(slr_lo_mach.fitresult[1], (featurenames=names(features), classlabels=["low", "normal"]))
+    plt = plot(wrap_lo, 0.8, 0.7, size=(1400, 600));
+    savefig(plt, "figures/low_tree_$(yr).png")
+
+    # classify extreme high outcomes
+    slr_hi_tree = RFClass(max_depth = 3, post_prune=true, min_samples_leaf = 100)
+    slr_hi_mach = machine(slr_hi_tree, features, slr_hi_labels)
+    MLJ.fit!(slr_hi_mach)
+    wrap_hi = DecisionTree.wrap(slr_hi_mach.fitresult[1], (featurenames=names(features), classlabels=["high", "normal"]))
+    plt = plot(wrap_hi, 0.8, 0.7, size=(1400, 600));
+    savefig(plt, "figures/high_tree_$(yr).png")
+
+    # nothing to return since we've saved the plots
+    return nothing 
+
+end
+
+(yr -> classify_drivers(yr, features)).(yrs)
+
+# make regression trees and compute Shapley values
+function shapley_reg(yrs, features)
+    shap = DataFrame(feature_name = names(features))
+    for yr in yrs
+        print("$(yr)")
+        slr_reg_tree = RFReg(n_trees=1000, min_samples_leaf = 100)
+        slr_reg_mach = machine(slr_reg_tree, parameters, slr_out[:, Symbol(yr)])
+        MLJ.fit!(slr_reg_mach, force=true)
+        # define function for parallelized Shapley calculation
+        @everywhere function predict_slr(model, data)
+            pred = DataFrame(slr_pred = MLJ.predict(model,data))
+            return pred
+        end
+
+        explain = copy(features)
+        reference = copy(features)
+        shap_out = ShapML.shap(explain = explain, 
+                                reference = reference,
+                                model = slr_reg_mach,
+                                predict_function = predict_slr,
+                                sample_size = 100,
+                                parallel = :samples,
+                                seed = 1)
+        shap_summary = DataFrames.by(shap_out,    
+                            [:feature_name],
+                            mean = [:shap_effect] => x -> mean(abs.(x.shap_effect)))
+        rename!(shap_summary, Dict(:mean => Symbol("mean_$(yr)")))
+        innerjoin!(shap, shap_summary, on=:ID)
+    end
+    return shap
+end
+
+yrs = 2050:10:2200
+shap = shapley_reg(yrs, features)
+
+save("output/shapley/shapley_indices.csv", shap)

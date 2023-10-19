@@ -1,0 +1,1 @@
+plt = data(filter(row -> row.climate_sensitivity > 4, dat)) * visual(Scatter, colormap=:Reds) * mapping(:cum_emissions, :slr, color=:climate_sensitivity) +  data(dat) * AlgebraOfGraphics.density() * visual(Contour) * mapping(:cum_emissions, :slr) 

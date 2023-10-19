@@ -8,6 +8,7 @@ Pkg.instantiate()
 
 # import necessary packages
 using Random
+using QuasiMonteCarlo
 using Mimi
 using MimiSNEASY
 using MimiBRICK
@@ -19,6 +20,7 @@ using XLSX
 using CSVFiles # need to keep for "load" function
 
 include("functions.jl") # include functions from other scripts
+include("gsa_functions.jl")
 
 # initial set up
 Random.seed!(1)
@@ -27,7 +29,7 @@ start_year = 1850
 end_year = 2300
 model_years = collect(start_year:end_year)
 num_years = length(model_years)
-num_params = 39
+num_samples = 1_000_000 
 
 # store dataframe with info for each RCP scenario for appropriate years (contains historical data from beginning-2005)
 RCP26 = scenario_df("RCP26")[in(model_years).(scenario_df("RCP26").year), :]
@@ -43,12 +45,66 @@ m = MimiBRICK.create_sneasy_brick(start_year=start_year, end_year=end_year) # 1 
 #run(m)
 #explore(m)
 
-# read in ensemble of parameter samples (design matrix)
-calibrated_params = DataFrame(load(joinpath(@__DIR__, "..", "results", "gsa_results", "default", "sobol_input_A.csv")))
-num_samples = nrow(calibrated_params)
+#g enerate parameter samples
+# set bounds for the 3 emissions parameters (growth, t_peak, decline)
+lb = zeros(3) # lower bound (0)
+ub = ones(3) # upper bound (1)
+
+# create design matrices for emissions parameters (A1 and B1)
+A1 = QuasiMonteCarlo.sample(num_samples, lb, ub, SobolSample()) # all values in range 0 to 1
+
+# define distributions for emissions parameters
+γ_g_dist     = truncated(Normal(0.004,0.0075), 0.001, Inf)  # growth parameter
+t_peak_dist  = truncated(Normal(2070,25), 2030, 2200)       # peaking time
+γ_d_dist     = truncated(Normal(0.07,0.05), 0.001, 0.2)     # decline parameter
+
+# combine emissions parmaters' distributions into a matrix
+emissions_dist = hcat(γ_g_dist, t_peak_dist, γ_d_dist)
+
+# convert the 0-1 quantiles into the actual values for growth, peaking, and decline
+for i in 1:3 # loop through the three emissions parameters
+    A1[i,:] = quantile(emissions_dist[i], A1[i,:])
+end
+
+# truncate the peaking years from Float to Integer
+A1[2,:] = trunc.(Int64, A1[2,:])
+
+
+# read in subsample of MCMC parameters (10,000 samples)
+mcmc_params = DataFrame(CSVFiles.load(joinpath(@__DIR__, "..", "data", "calibrated_parameters", "parameters_subsample_sneasybrick.csv"))) # read in subsample
+num_params = size(mcmc_params, 2)
+
+# get max and min values for each posterior distribution's samples
+# # bounds = [mapslices(extrema, Matrix(mcmc_params), dims=1)...] # produces a vector of tuples with min/max values for each parameter
+
+# fit KDEs to each marginal posterior (we need output of bandwidth)
+# bandwidth = mapslices(bwnormal, Matrix(mcmc_params); dims=1)
+
+# initialize storage for A2 and B2 matrices
+
+A2 = zeros(num_samples,num_params)
+
+# sample values for each parameter to create A2 and B2 matrices
+mcmc_idx = sample(1:size(mcmc_params, 1), num_samples)
+for i in 1:num_params
+    for j in 1:num_samples
+ #       A2[j,i] = sample_value(param_val=mcmc_params[mcmc_idx[j],i], bw=bandwidth[i], bounds=bounds[i])
+        A2[j, i] = mcmc_params[mcmc_idx[j], i]
+    end
+end
+
+A = hcat(A1', A2)
+param_names = ["gamma_g", "t_peak", "gamma_d", names(mcmc_params)...]
+A = DataFrame(A, param_names)
+A[!, :lw_random_sample] = rand(Normal(0.0003, 0.00018), num_samples)
+calibrated_params = Matrix(A)
+
+#------------------------------
+
+
 
 # pre-allocate arrays to store results
-parameters                  = zeros(Float64, num_samples, num_params)
+parameters                  = zeros(Float64, num_samples, 39)
 co2_emissions               = zeros(Float64, num_samples, num_years)
 radiative_forcing           = zeros(Float64, num_samples, num_years)
 temperature                 = zeros(Float64, num_samples, num_years)
@@ -62,7 +118,7 @@ ocean_heat                  = zeros(Float64, num_samples, num_years)
 
 # loop over each sample input and evaluate the model
 for i = 1:num_samples
-
+    print("$i\n")
     # ----------------------------------------------- Create emissions curves with current set of samples --------------------------------------------------- #
 
     # isolate one set of samples and update parameters to those values

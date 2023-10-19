@@ -1,0 +1,917 @@
+  Activating project at `~/SLR`
+[ Info: For silent loading, specify `verbosity=0`. 
+┌ Warning: The number and/or types of data arguments do not match what the specified model
+│ supports. Suppress this type check by specifying `scitype_check_level=0`.
+│ 
+│ Run `@doc EvoTrees.EvoTreeRegressor` to learn more about your model's requirements.
+│ 
+│ Commonly, but non exclusively, supervised models are constructed using the syntax
+│ `machine(model, X, y)` or `machine(model, X, y, w)` while most other models are
+│ constructed with `machine(model, X)`.  Here `X` are features, `y` a target, and `w`
+│ sample or class weights.
+│ 
+│ In general, data in `machine(model, data...)` is expected to satisfy
+│ 
+│     scitype(data) <: MLJ.fit_data_scitype(model)
+│ 
+│ In the present case:
+│ 
+│ scitype(data) = Tuple{Table{AbstractVector{Continuous}}, AbstractVector{Count}}
+│ 
+│ fit_data_scitype(model) = Union{Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}}, Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}, AbstractVector{<:Union{Continuous, Count}}}}
+└ @ MLJBase ~/.julia/packages/MLJBase/ByFwA/src/machines.jl:230
+┌ Info: Training machine(EvoTrees.EvoTreeRegressor{EvoTrees.MSE}
+│  - nrounds: 200
+│  - lambda: 0.0
+│  - gamma: 0.0
+│  - eta: 0.1
+│  - max_depth: 5
+│  - min_weight: 1.0
+│  - rowsample: 1.0
+│  - colsample: 1.0
+│  - nbins: 64
+│  - alpha: 0.5
+│  - monotone_constraints: Dict{Int64, Int64}()
+│  - tree_type: binary
+│  - rng: Random.MersenneTwister(123)
+└ , …).
+┌ Warning: The number and/or types of data arguments do not match what the specified model
+│ supports. Suppress this type check by specifying `scitype_check_level=0`.
+│ 
+│ Run `@doc EvoTrees.EvoTreeRegressor` to learn more about your model's requirements.
+│ 
+│ Commonly, but non exclusively, supervised models are constructed using the syntax
+│ `machine(model, X, y)` or `machine(model, X, y, w)` while most other models are
+│ constructed with `machine(model, X)`.  Here `X` are features, `y` a target, and `w`
+│ sample or class weights.
+│ 
+│ In general, data in `machine(model, data...)` is expected to satisfy
+│ 
+│     scitype(data) <: MLJ.fit_data_scitype(model)
+│ 
+│ In the present case:
+│ 
+│ scitype(data) = Tuple{Table{AbstractVector{Continuous}}, AbstractVector{Count}}
+│ 
+│ fit_data_scitype(model) = Union{Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}}, Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}, AbstractVector{<:Union{Continuous, Count}}}}
+└ @ MLJBase ~/.julia/packages/MLJBase/ByFwA/src/machines.jl:230
+┌ Info: Training machine(EvoTrees.EvoTreeRegressor{EvoTrees.MSE}
+│  - nrounds: 200
+│  - lambda: 0.0
+│  - gamma: 0.0
+│  - eta: 0.1
+│  - max_depth: 5
+│  - min_weight: 1.0
+│  - rowsample: 1.0
+│  - colsample: 1.0
+│  - nbins: 64
+│  - alpha: 0.5
+│  - monotone_constraints: Dict{Int64, Int64}()
+│  - tree_type: binary
+│  - rng: Random.MersenneTwister(123)
+└ , …).
+┌ Warning: The number and/or types of data arguments do not match what the specified model
+│ supports. Suppress this type check by specifying `scitype_check_level=0`.
+│ 
+│ Run `@doc EvoTrees.EvoTreeRegressor` to learn more about your model's requirements.
+│ 
+│ Commonly, but non exclusively, supervised models are constructed using the syntax
+│ `machine(model, X, y)` or `machine(model, X, y, w)` while most other models are
+│ constructed with `machine(model, X)`.  Here `X` are features, `y` a target, and `w`
+│ sample or class weights.
+│ 
+│ In general, data in `machine(model, data...)` is expected to satisfy
+│ 
+│     scitype(data) <: MLJ.fit_data_scitype(model)
+│ 
+│ In the present case:
+│ 
+│ scitype(data) = Tuple{Table{AbstractVector{Continuous}}, AbstractVector{Count}}
+│ 
+│ fit_data_scitype(model) = Union{Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}}, Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}, AbstractVector{<:Union{Continuous, Count}}}}
+└ @ MLJBase ~/.julia/packages/MLJBase/ByFwA/src/machines.jl:230
+┌ Info: Training machine(EvoTrees.EvoTreeRegressor{EvoTrees.MSE}
+│  - nrounds: 200
+│  - lambda: 0.0
+│  - gamma: 0.0
+│  - eta: 0.1
+│  - max_depth: 5
+│  - min_weight: 1.0
+│  - rowsample: 1.0
+│  - colsample: 1.0
+│  - nbins: 64
+│  - alpha: 0.5
+│  - monotone_constraints: Dict{Int64, Int64}()
+│  - tree_type: binary
+│  - rng: Random.MersenneTwister(123)
+└ , …).
+┌ Warning: The number and/or types of data arguments do not match what the specified model
+│ supports. Suppress this type check by specifying `scitype_check_level=0`.
+│ 
+│ Run `@doc EvoTrees.EvoTreeRegressor` to learn more about your model's requirements.
+│ 
+│ Commonly, but non exclusively, supervised models are constructed using the syntax
+│ `machine(model, X, y)` or `machine(model, X, y, w)` while most other models are
+│ constructed with `machine(model, X)`.  Here `X` are features, `y` a target, and `w`
+│ sample or class weights.
+│ 
+│ In general, data in `machine(model, data...)` is expected to satisfy
+│ 
+│     scitype(data) <: MLJ.fit_data_scitype(model)
+│ 
+│ In the present case:
+│ 
+│ scitype(data) = Tuple{Table{AbstractVector{Continuous}}, AbstractVector{Count}}
+│ 
+│ fit_data_scitype(model) = Union{Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}}, Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}, AbstractVector{<:Union{Continuous, Count}}}}
+└ @ MLJBase ~/.julia/packages/MLJBase/ByFwA/src/machines.jl:230
+┌ Info: Training machine(EvoTrees.EvoTreeRegressor{EvoTrees.MSE}
+│  - nrounds: 200
+│  - lambda: 0.0
+│  - gamma: 0.0
+│  - eta: 0.1
+│  - max_depth: 5
+│  - min_weight: 1.0
+│  - rowsample: 1.0
+│  - colsample: 1.0
+│  - nbins: 64
+│  - alpha: 0.5
+│  - monotone_constraints: Dict{Int64, Int64}()
+│  - tree_type: binary
+│  - rng: Random.MersenneTwister(123)
+└ , …).
+┌ Warning: The number and/or types of data arguments do not match what the specified model
+│ supports. Suppress this type check by specifying `scitype_check_level=0`.
+│ 
+│ Run `@doc EvoTrees.EvoTreeRegressor` to learn more about your model's requirements.
+│ 
+│ Commonly, but non exclusively, supervised models are constructed using the syntax
+│ `machine(model, X, y)` or `machine(model, X, y, w)` while most other models are
+│ constructed with `machine(model, X)`.  Here `X` are features, `y` a target, and `w`
+│ sample or class weights.
+│ 
+│ In general, data in `machine(model, data...)` is expected to satisfy
+│ 
+│     scitype(data) <: MLJ.fit_data_scitype(model)
+│ 
+│ In the present case:
+│ 
+│ scitype(data) = Tuple{Table{AbstractVector{Continuous}}, AbstractVector{Count}}
+│ 
+│ fit_data_scitype(model) = Union{Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}}, Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}, AbstractVector{<:Union{Continuous, Count}}}}
+└ @ MLJBase ~/.julia/packages/MLJBase/ByFwA/src/machines.jl:230
+┌ Info: Training machine(EvoTrees.EvoTreeRegressor{EvoTrees.MSE}
+│  - nrounds: 200
+│  - lambda: 0.0
+│  - gamma: 0.0
+│  - eta: 0.1
+│  - max_depth: 5
+│  - min_weight: 1.0
+│  - rowsample: 1.0
+│  - colsample: 1.0
+│  - nbins: 64
+│  - alpha: 0.5
+│  - monotone_constraints: Dict{Int64, Int64}()
+│  - tree_type: binary
+│  - rng: Random.MersenneTwister(123)
+└ , …).
+┌ Warning: The number and/or types of data arguments do not match what the specified model
+│ supports. Suppress this type check by specifying `scitype_check_level=0`.
+│ 
+│ Run `@doc EvoTrees.EvoTreeRegressor` to learn more about your model's requirements.
+│ 
+│ Commonly, but non exclusively, supervised models are constructed using the syntax
+│ `machine(model, X, y)` or `machine(model, X, y, w)` while most other models are
+│ constructed with `machine(model, X)`.  Here `X` are features, `y` a target, and `w`
+│ sample or class weights.
+│ 
+│ In general, data in `machine(model, data...)` is expected to satisfy
+│ 
+│     scitype(data) <: MLJ.fit_data_scitype(model)
+│ 
+│ In the present case:
+│ 
+│ scitype(data) = Tuple{Table{AbstractVector{Continuous}}, AbstractVector{Count}}
+│ 
+│ fit_data_scitype(model) = Union{Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}}, Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}, AbstractVector{<:Union{Continuous, Count}}}}
+└ @ MLJBase ~/.julia/packages/MLJBase/ByFwA/src/machines.jl:230
+┌ Info: Training machine(EvoTrees.EvoTreeRegressor{EvoTrees.MSE}
+│  - nrounds: 200
+│  - lambda: 0.0
+│  - gamma: 0.0
+│  - eta: 0.1
+│  - max_depth: 5
+│  - min_weight: 1.0
+│  - rowsample: 1.0
+│  - colsample: 1.0
+│  - nbins: 64
+│  - alpha: 0.5
+│  - monotone_constraints: Dict{Int64, Int64}()
+│  - tree_type: binary
+│  - rng: Random.MersenneTwister(123)
+└ , …).
+┌ Warning: The number and/or types of data arguments do not match what the specified model
+│ supports. Suppress this type check by specifying `scitype_check_level=0`.
+│ 
+│ Run `@doc EvoTrees.EvoTreeRegressor` to learn more about your model's requirements.
+│ 
+│ Commonly, but non exclusively, supervised models are constructed using the syntax
+│ `machine(model, X, y)` or `machine(model, X, y, w)` while most other models are
+│ constructed with `machine(model, X)`.  Here `X` are features, `y` a target, and `w`
+│ sample or class weights.
+│ 
+│ In general, data in `machine(model, data...)` is expected to satisfy
+│ 
+│     scitype(data) <: MLJ.fit_data_scitype(model)
+│ 
+│ In the present case:
+│ 
+│ scitype(data) = Tuple{Table{AbstractVector{Continuous}}, AbstractVector{Count}}
+│ 
+│ fit_data_scitype(model) = Union{Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}}, Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}, AbstractVector{<:Union{Continuous, Count}}}}
+└ @ MLJBase ~/.julia/packages/MLJBase/ByFwA/src/machines.jl:230
+┌ Info: Training machine(EvoTrees.EvoTreeRegressor{EvoTrees.MSE}
+│  - nrounds: 200
+│  - lambda: 0.0
+│  - gamma: 0.0
+│  - eta: 0.1
+│  - max_depth: 5
+│  - min_weight: 1.0
+│  - rowsample: 1.0
+│  - colsample: 1.0
+│  - nbins: 64
+│  - alpha: 0.5
+│  - monotone_constraints: Dict{Int64, Int64}()
+│  - tree_type: binary
+│  - rng: Random.MersenneTwister(123)
+└ , …).
+┌ Warning: The number and/or types of data arguments do not match what the specified model
+│ supports. Suppress this type check by specifying `scitype_check_level=0`.
+│ 
+│ Run `@doc EvoTrees.EvoTreeRegressor` to learn more about your model's requirements.
+│ 
+│ Commonly, but non exclusively, supervised models are constructed using the syntax
+│ `machine(model, X, y)` or `machine(model, X, y, w)` while most other models are
+│ constructed with `machine(model, X)`.  Here `X` are features, `y` a target, and `w`
+│ sample or class weights.
+│ 
+│ In general, data in `machine(model, data...)` is expected to satisfy
+│ 
+│     scitype(data) <: MLJ.fit_data_scitype(model)
+│ 
+│ In the present case:
+│ 
+│ scitype(data) = Tuple{Table{AbstractVector{Continuous}}, AbstractVector{Count}}
+│ 
+│ fit_data_scitype(model) = Union{Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}}, Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}, AbstractVector{<:Union{Continuous, Count}}}}
+└ @ MLJBase ~/.julia/packages/MLJBase/ByFwA/src/machines.jl:230
+┌ Info: Training machine(EvoTrees.EvoTreeRegressor{EvoTrees.MSE}
+│  - nrounds: 200
+│  - lambda: 0.0
+│  - gamma: 0.0
+│  - eta: 0.1
+│  - max_depth: 5
+│  - min_weight: 1.0
+│  - rowsample: 1.0
+│  - colsample: 1.0
+│  - nbins: 64
+│  - alpha: 0.5
+│  - monotone_constraints: Dict{Int64, Int64}()
+│  - tree_type: binary
+│  - rng: Random.MersenneTwister(123)
+└ , …).
+┌ Warning: The number and/or types of data arguments do not match what the specified model
+│ supports. Suppress this type check by specifying `scitype_check_level=0`.
+│ 
+│ Run `@doc EvoTrees.EvoTreeRegressor` to learn more about your model's requirements.
+│ 
+│ Commonly, but non exclusively, supervised models are constructed using the syntax
+│ `machine(model, X, y)` or `machine(model, X, y, w)` while most other models are
+│ constructed with `machine(model, X)`.  Here `X` are features, `y` a target, and `w`
+│ sample or class weights.
+│ 
+│ In general, data in `machine(model, data...)` is expected to satisfy
+│ 
+│     scitype(data) <: MLJ.fit_data_scitype(model)
+│ 
+│ In the present case:
+│ 
+│ scitype(data) = Tuple{Table{AbstractVector{Continuous}}, AbstractVector{Count}}
+│ 
+│ fit_data_scitype(model) = Union{Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}}, Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}, AbstractVector{<:Union{Continuous, Count}}}}
+└ @ MLJBase ~/.julia/packages/MLJBase/ByFwA/src/machines.jl:230
+┌ Info: Training machine(EvoTrees.EvoTreeRegressor{EvoTrees.MSE}
+│  - nrounds: 200
+│  - lambda: 0.0
+│  - gamma: 0.0
+│  - eta: 0.1
+│  - max_depth: 5
+│  - min_weight: 1.0
+│  - rowsample: 1.0
+│  - colsample: 1.0
+│  - nbins: 64
+│  - alpha: 0.5
+│  - monotone_constraints: Dict{Int64, Int64}()
+│  - tree_type: binary
+│  - rng: Random.MersenneTwister(123)
+└ , …).
+┌ Warning: The number and/or types of data arguments do not match what the specified model
+│ supports. Suppress this type check by specifying `scitype_check_level=0`.
+│ 
+│ Run `@doc EvoTrees.EvoTreeRegressor` to learn more about your model's requirements.
+│ 
+│ Commonly, but non exclusively, supervised models are constructed using the syntax
+│ `machine(model, X, y)` or `machine(model, X, y, w)` while most other models are
+│ constructed with `machine(model, X)`.  Here `X` are features, `y` a target, and `w`
+│ sample or class weights.
+│ 
+│ In general, data in `machine(model, data...)` is expected to satisfy
+│ 
+│     scitype(data) <: MLJ.fit_data_scitype(model)
+│ 
+│ In the present case:
+│ 
+│ scitype(data) = Tuple{Table{AbstractVector{Continuous}}, AbstractVector{Count}}
+│ 
+│ fit_data_scitype(model) = Union{Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}}, Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}, AbstractVector{<:Union{Continuous, Count}}}}
+└ @ MLJBase ~/.julia/packages/MLJBase/ByFwA/src/machines.jl:230
+┌ Info: Training machine(EvoTrees.EvoTreeRegressor{EvoTrees.MSE}
+│  - nrounds: 200
+│  - lambda: 0.0
+│  - gamma: 0.0
+│  - eta: 0.1
+│  - max_depth: 5
+│  - min_weight: 1.0
+│  - rowsample: 1.0
+│  - colsample: 1.0
+│  - nbins: 64
+│  - alpha: 0.5
+│  - monotone_constraints: Dict{Int64, Int64}()
+│  - tree_type: binary
+│  - rng: Random.MersenneTwister(123)
+└ , …).
+┌ Warning: The number and/or types of data arguments do not match what the specified model
+│ supports. Suppress this type check by specifying `scitype_check_level=0`.
+│ 
+│ Run `@doc EvoTrees.EvoTreeRegressor` to learn more about your model's requirements.
+│ 
+│ Commonly, but non exclusively, supervised models are constructed using the syntax
+│ `machine(model, X, y)` or `machine(model, X, y, w)` while most other models are
+│ constructed with `machine(model, X)`.  Here `X` are features, `y` a target, and `w`
+│ sample or class weights.
+│ 
+│ In general, data in `machine(model, data...)` is expected to satisfy
+│ 
+│     scitype(data) <: MLJ.fit_data_scitype(model)
+│ 
+│ In the present case:
+│ 
+│ scitype(data) = Tuple{Table{AbstractVector{Continuous}}, AbstractVector{Count}}
+│ 
+│ fit_data_scitype(model) = Union{Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}}, Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}, AbstractVector{<:Union{Continuous, Count}}}}
+└ @ MLJBase ~/.julia/packages/MLJBase/ByFwA/src/machines.jl:230
+┌ Info: Training machine(EvoTrees.EvoTreeRegressor{EvoTrees.MSE}
+│  - nrounds: 200
+│  - lambda: 0.0
+│  - gamma: 0.0
+│  - eta: 0.1
+│  - max_depth: 5
+│  - min_weight: 1.0
+│  - rowsample: 1.0
+│  - colsample: 1.0
+│  - nbins: 64
+│  - alpha: 0.5
+│  - monotone_constraints: Dict{Int64, Int64}()
+│  - tree_type: binary
+│  - rng: Random.MersenneTwister(123)
+└ , …).
+┌ Warning: The number and/or types of data arguments do not match what the specified model
+│ supports. Suppress this type check by specifying `scitype_check_level=0`.
+│ 
+│ Run `@doc EvoTrees.EvoTreeRegressor` to learn more about your model's requirements.
+│ 
+│ Commonly, but non exclusively, supervised models are constructed using the syntax
+│ `machine(model, X, y)` or `machine(model, X, y, w)` while most other models are
+│ constructed with `machine(model, X)`.  Here `X` are features, `y` a target, and `w`
+│ sample or class weights.
+│ 
+│ In general, data in `machine(model, data...)` is expected to satisfy
+│ 
+│     scitype(data) <: MLJ.fit_data_scitype(model)
+│ 
+│ In the present case:
+│ 
+│ scitype(data) = Tuple{Table{AbstractVector{Continuous}}, AbstractVector{Count}}
+│ 
+│ fit_data_scitype(model) = Union{Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}}, Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}, AbstractVector{<:Union{Continuous, Count}}}}
+└ @ MLJBase ~/.julia/packages/MLJBase/ByFwA/src/machines.jl:230
+┌ Info: Training machine(EvoTrees.EvoTreeRegressor{EvoTrees.MSE}
+│  - nrounds: 200
+│  - lambda: 0.0
+│  - gamma: 0.0
+│  - eta: 0.1
+│  - max_depth: 5
+│  - min_weight: 1.0
+│  - rowsample: 1.0
+│  - colsample: 1.0
+│  - nbins: 64
+│  - alpha: 0.5
+│  - monotone_constraints: Dict{Int64, Int64}()
+│  - tree_type: binary
+│  - rng: Random.MersenneTwister(123)
+└ , …).
+┌ Warning: The number and/or types of data arguments do not match what the specified model
+│ supports. Suppress this type check by specifying `scitype_check_level=0`.
+│ 
+│ Run `@doc EvoTrees.EvoTreeRegressor` to learn more about your model's requirements.
+│ 
+│ Commonly, but non exclusively, supervised models are constructed using the syntax
+│ `machine(model, X, y)` or `machine(model, X, y, w)` while most other models are
+│ constructed with `machine(model, X)`.  Here `X` are features, `y` a target, and `w`
+│ sample or class weights.
+│ 
+│ In general, data in `machine(model, data...)` is expected to satisfy
+│ 
+│     scitype(data) <: MLJ.fit_data_scitype(model)
+│ 
+│ In the present case:
+│ 
+│ scitype(data) = Tuple{Table{AbstractVector{Continuous}}, AbstractVector{Count}}
+│ 
+│ fit_data_scitype(model) = Union{Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}}, Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}, AbstractVector{<:Union{Continuous, Count}}}}
+└ @ MLJBase ~/.julia/packages/MLJBase/ByFwA/src/machines.jl:230
+┌ Info: Training machine(EvoTrees.EvoTreeRegressor{EvoTrees.MSE}
+│  - nrounds: 200
+│  - lambda: 0.0
+│  - gamma: 0.0
+│  - eta: 0.1
+│  - max_depth: 5
+│  - min_weight: 1.0
+│  - rowsample: 1.0
+│  - colsample: 1.0
+│  - nbins: 64
+│  - alpha: 0.5
+│  - monotone_constraints: Dict{Int64, Int64}()
+│  - tree_type: binary
+│  - rng: Random.MersenneTwister(123)
+└ , …).
+┌ Warning: The number and/or types of data arguments do not match what the specified model
+│ supports. Suppress this type check by specifying `scitype_check_level=0`.
+│ 
+│ Run `@doc EvoTrees.EvoTreeRegressor` to learn more about your model's requirements.
+│ 
+│ Commonly, but non exclusively, supervised models are constructed using the syntax
+│ `machine(model, X, y)` or `machine(model, X, y, w)` while most other models are
+│ constructed with `machine(model, X)`.  Here `X` are features, `y` a target, and `w`
+│ sample or class weights.
+│ 
+│ In general, data in `machine(model, data...)` is expected to satisfy
+│ 
+│     scitype(data) <: MLJ.fit_data_scitype(model)
+│ 
+│ In the present case:
+│ 
+│ scitype(data) = Tuple{Table{AbstractVector{Continuous}}, AbstractVector{Count}}
+│ 
+│ fit_data_scitype(model) = Union{Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}}, Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}, AbstractVector{<:Union{Continuous, Count}}}}
+└ @ MLJBase ~/.julia/packages/MLJBase/ByFwA/src/machines.jl:230
+┌ Info: Training machine(EvoTrees.EvoTreeRegressor{EvoTrees.MSE}
+│  - nrounds: 200
+│  - lambda: 0.0
+│  - gamma: 0.0
+│  - eta: 0.1
+│  - max_depth: 5
+│  - min_weight: 1.0
+│  - rowsample: 1.0
+│  - colsample: 1.0
+│  - nbins: 64
+│  - alpha: 0.5
+│  - monotone_constraints: Dict{Int64, Int64}()
+│  - tree_type: binary
+│  - rng: Random.MersenneTwister(123)
+└ , …).
+┌ Warning: The number and/or types of data arguments do not match what the specified model
+│ supports. Suppress this type check by specifying `scitype_check_level=0`.
+│ 
+│ Run `@doc EvoTrees.EvoTreeRegressor` to learn more about your model's requirements.
+│ 
+│ Commonly, but non exclusively, supervised models are constructed using the syntax
+│ `machine(model, X, y)` or `machine(model, X, y, w)` while most other models are
+│ constructed with `machine(model, X)`.  Here `X` are features, `y` a target, and `w`
+│ sample or class weights.
+│ 
+│ In general, data in `machine(model, data...)` is expected to satisfy
+│ 
+│     scitype(data) <: MLJ.fit_data_scitype(model)
+│ 
+│ In the present case:
+│ 
+│ scitype(data) = Tuple{Table{AbstractVector{Continuous}}, AbstractVector{Count}}
+│ 
+│ fit_data_scitype(model) = Union{Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}}, Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}, AbstractVector{<:Union{Continuous, Count}}}}
+└ @ MLJBase ~/.julia/packages/MLJBase/ByFwA/src/machines.jl:230
+┌ Info: Training machine(EvoTrees.EvoTreeRegressor{EvoTrees.MSE}
+│  - nrounds: 200
+│  - lambda: 0.0
+│  - gamma: 0.0
+│  - eta: 0.1
+│  - max_depth: 5
+│  - min_weight: 1.0
+│  - rowsample: 1.0
+│  - colsample: 1.0
+│  - nbins: 64
+│  - alpha: 0.5
+│  - monotone_constraints: Dict{Int64, Int64}()
+│  - tree_type: binary
+│  - rng: Random.MersenneTwister(123)
+└ , …).
+┌ Warning: The number and/or types of data arguments do not match what the specified model
+│ supports. Suppress this type check by specifying `scitype_check_level=0`.
+│ 
+│ Run `@doc EvoTrees.EvoTreeRegressor` to learn more about your model's requirements.
+│ 
+│ Commonly, but non exclusively, supervised models are constructed using the syntax
+│ `machine(model, X, y)` or `machine(model, X, y, w)` while most other models are
+│ constructed with `machine(model, X)`.  Here `X` are features, `y` a target, and `w`
+│ sample or class weights.
+│ 
+│ In general, data in `machine(model, data...)` is expected to satisfy
+│ 
+│     scitype(data) <: MLJ.fit_data_scitype(model)
+│ 
+│ In the present case:
+│ 
+│ scitype(data) = Tuple{Table{AbstractVector{Continuous}}, AbstractVector{Count}}
+│ 
+│ fit_data_scitype(model) = Union{Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}}, Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}, AbstractVector{<:Union{Continuous, Count}}}}
+└ @ MLJBase ~/.julia/packages/MLJBase/ByFwA/src/machines.jl:230
+┌ Info: Training machine(EvoTrees.EvoTreeRegressor{EvoTrees.MSE}
+│  - nrounds: 200
+│  - lambda: 0.0
+│  - gamma: 0.0
+│  - eta: 0.1
+│  - max_depth: 5
+│  - min_weight: 1.0
+│  - rowsample: 1.0
+│  - colsample: 1.0
+│  - nbins: 64
+│  - alpha: 0.5
+│  - monotone_constraints: Dict{Int64, Int64}()
+│  - tree_type: binary
+│  - rng: Random.MersenneTwister(123)
+└ , …).
+┌ Warning: The number and/or types of data arguments do not match what the specified model
+│ supports. Suppress this type check by specifying `scitype_check_level=0`.
+│ 
+│ Run `@doc EvoTrees.EvoTreeRegressor` to learn more about your model's requirements.
+│ 
+│ Commonly, but non exclusively, supervised models are constructed using the syntax
+│ `machine(model, X, y)` or `machine(model, X, y, w)` while most other models are
+│ constructed with `machine(model, X)`.  Here `X` are features, `y` a target, and `w`
+│ sample or class weights.
+│ 
+│ In general, data in `machine(model, data...)` is expected to satisfy
+│ 
+│     scitype(data) <: MLJ.fit_data_scitype(model)
+│ 
+│ In the present case:
+│ 
+│ scitype(data) = Tuple{Table{AbstractVector{Continuous}}, AbstractVector{Count}}
+│ 
+│ fit_data_scitype(model) = Union{Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}}, Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}, AbstractVector{<:Union{Continuous, Count}}}}
+└ @ MLJBase ~/.julia/packages/MLJBase/ByFwA/src/machines.jl:230
+┌ Info: Training machine(EvoTrees.EvoTreeRegressor{EvoTrees.MSE}
+│  - nrounds: 200
+│  - lambda: 0.0
+│  - gamma: 0.0
+│  - eta: 0.1
+│  - max_depth: 5
+│  - min_weight: 1.0
+│  - rowsample: 1.0
+│  - colsample: 1.0
+│  - nbins: 64
+│  - alpha: 0.5
+│  - monotone_constraints: Dict{Int64, Int64}()
+│  - tree_type: binary
+│  - rng: Random.MersenneTwister(123)
+└ , …).
+┌ Warning: The number and/or types of data arguments do not match what the specified model
+│ supports. Suppress this type check by specifying `scitype_check_level=0`.
+│ 
+│ Run `@doc EvoTrees.EvoTreeRegressor` to learn more about your model's requirements.
+│ 
+│ Commonly, but non exclusively, supervised models are constructed using the syntax
+│ `machine(model, X, y)` or `machine(model, X, y, w)` while most other models are
+│ constructed with `machine(model, X)`.  Here `X` are features, `y` a target, and `w`
+│ sample or class weights.
+│ 
+│ In general, data in `machine(model, data...)` is expected to satisfy
+│ 
+│     scitype(data) <: MLJ.fit_data_scitype(model)
+│ 
+│ In the present case:
+│ 
+│ scitype(data) = Tuple{Table{AbstractVector{Continuous}}, AbstractVector{Count}}
+│ 
+│ fit_data_scitype(model) = Union{Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}}, Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}, AbstractVector{<:Union{Continuous, Count}}}}
+└ @ MLJBase ~/.julia/packages/MLJBase/ByFwA/src/machines.jl:230
+┌ Info: Training machine(EvoTrees.EvoTreeRegressor{EvoTrees.MSE}
+│  - nrounds: 200
+│  - lambda: 0.0
+│  - gamma: 0.0
+│  - eta: 0.1
+│  - max_depth: 5
+│  - min_weight: 1.0
+│  - rowsample: 1.0
+│  - colsample: 1.0
+│  - nbins: 64
+│  - alpha: 0.5
+│  - monotone_constraints: Dict{Int64, Int64}()
+│  - tree_type: binary
+│  - rng: Random.MersenneTwister(123)
+└ , …).
+┌ Warning: The number and/or types of data arguments do not match what the specified model
+│ supports. Suppress this type check by specifying `scitype_check_level=0`.
+│ 
+│ Run `@doc EvoTrees.EvoTreeRegressor` to learn more about your model's requirements.
+│ 
+│ Commonly, but non exclusively, supervised models are constructed using the syntax
+│ `machine(model, X, y)` or `machine(model, X, y, w)` while most other models are
+│ constructed with `machine(model, X)`.  Here `X` are features, `y` a target, and `w`
+│ sample or class weights.
+│ 
+│ In general, data in `machine(model, data...)` is expected to satisfy
+│ 
+│     scitype(data) <: MLJ.fit_data_scitype(model)
+│ 
+│ In the present case:
+│ 
+│ scitype(data) = Tuple{Table{AbstractVector{Continuous}}, AbstractVector{Count}}
+│ 
+│ fit_data_scitype(model) = Union{Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}}, Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}, AbstractVector{<:Union{Continuous, Count}}}}
+└ @ MLJBase ~/.julia/packages/MLJBase/ByFwA/src/machines.jl:230
+┌ Info: Training machine(EvoTrees.EvoTreeRegressor{EvoTrees.MSE}
+│  - nrounds: 200
+│  - lambda: 0.0
+│  - gamma: 0.0
+│  - eta: 0.1
+│  - max_depth: 5
+│  - min_weight: 1.0
+│  - rowsample: 1.0
+│  - colsample: 1.0
+│  - nbins: 64
+│  - alpha: 0.5
+│  - monotone_constraints: Dict{Int64, Int64}()
+│  - tree_type: binary
+│  - rng: Random.MersenneTwister(123)
+└ , …).
+┌ Warning: The number and/or types of data arguments do not match what the specified model
+│ supports. Suppress this type check by specifying `scitype_check_level=0`.
+│ 
+│ Run `@doc EvoTrees.EvoTreeRegressor` to learn more about your model's requirements.
+│ 
+│ Commonly, but non exclusively, supervised models are constructed using the syntax
+│ `machine(model, X, y)` or `machine(model, X, y, w)` while most other models are
+│ constructed with `machine(model, X)`.  Here `X` are features, `y` a target, and `w`
+│ sample or class weights.
+│ 
+│ In general, data in `machine(model, data...)` is expected to satisfy
+│ 
+│     scitype(data) <: MLJ.fit_data_scitype(model)
+│ 
+│ In the present case:
+│ 
+│ scitype(data) = Tuple{Table{AbstractVector{Continuous}}, AbstractVector{Count}}
+│ 
+│ fit_data_scitype(model) = Union{Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}}, Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}, AbstractVector{<:Union{Continuous, Count}}}}
+└ @ MLJBase ~/.julia/packages/MLJBase/ByFwA/src/machines.jl:230
+┌ Info: Training machine(EvoTrees.EvoTreeRegressor{EvoTrees.MSE}
+│  - nrounds: 200
+│  - lambda: 0.0
+│  - gamma: 0.0
+│  - eta: 0.1
+│  - max_depth: 5
+│  - min_weight: 1.0
+│  - rowsample: 1.0
+│  - colsample: 1.0
+│  - nbins: 64
+│  - alpha: 0.5
+│  - monotone_constraints: Dict{Int64, Int64}()
+│  - tree_type: binary
+│  - rng: Random.MersenneTwister(123)
+└ , …).
+┌ Warning: The number and/or types of data arguments do not match what the specified model
+│ supports. Suppress this type check by specifying `scitype_check_level=0`.
+│ 
+│ Run `@doc EvoTrees.EvoTreeRegressor` to learn more about your model's requirements.
+│ 
+│ Commonly, but non exclusively, supervised models are constructed using the syntax
+│ `machine(model, X, y)` or `machine(model, X, y, w)` while most other models are
+│ constructed with `machine(model, X)`.  Here `X` are features, `y` a target, and `w`
+│ sample or class weights.
+│ 
+│ In general, data in `machine(model, data...)` is expected to satisfy
+│ 
+│     scitype(data) <: MLJ.fit_data_scitype(model)
+│ 
+│ In the present case:
+│ 
+│ scitype(data) = Tuple{Table{AbstractVector{Continuous}}, AbstractVector{Count}}
+│ 
+│ fit_data_scitype(model) = Union{Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}}, Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}, AbstractVector{<:Union{Continuous, Count}}}}
+└ @ MLJBase ~/.julia/packages/MLJBase/ByFwA/src/machines.jl:230
+┌ Info: Training machine(EvoTrees.EvoTreeRegressor{EvoTrees.MSE}
+│  - nrounds: 200
+│  - lambda: 0.0
+│  - gamma: 0.0
+│  - eta: 0.1
+│  - max_depth: 5
+│  - min_weight: 1.0
+│  - rowsample: 1.0
+│  - colsample: 1.0
+│  - nbins: 64
+│  - alpha: 0.5
+│  - monotone_constraints: Dict{Int64, Int64}()
+│  - tree_type: binary
+│  - rng: Random.MersenneTwister(123)
+└ , …).
+┌ Warning: The number and/or types of data arguments do not match what the specified model
+│ supports. Suppress this type check by specifying `scitype_check_level=0`.
+│ 
+│ Run `@doc EvoTrees.EvoTreeRegressor` to learn more about your model's requirements.
+│ 
+│ Commonly, but non exclusively, supervised models are constructed using the syntax
+│ `machine(model, X, y)` or `machine(model, X, y, w)` while most other models are
+│ constructed with `machine(model, X)`.  Here `X` are features, `y` a target, and `w`
+│ sample or class weights.
+│ 
+│ In general, data in `machine(model, data...)` is expected to satisfy
+│ 
+│     scitype(data) <: MLJ.fit_data_scitype(model)
+│ 
+│ In the present case:
+│ 
+│ scitype(data) = Tuple{Table{AbstractVector{Continuous}}, AbstractVector{Count}}
+│ 
+│ fit_data_scitype(model) = Union{Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}}, Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}, AbstractVector{<:Union{Continuous, Count}}}}
+└ @ MLJBase ~/.julia/packages/MLJBase/ByFwA/src/machines.jl:230
+┌ Info: Training machine(EvoTrees.EvoTreeRegressor{EvoTrees.MSE}
+│  - nrounds: 200
+│  - lambda: 0.0
+│  - gamma: 0.0
+│  - eta: 0.1
+│  - max_depth: 5
+│  - min_weight: 1.0
+│  - rowsample: 1.0
+│  - colsample: 1.0
+│  - nbins: 64
+│  - alpha: 0.5
+│  - monotone_constraints: Dict{Int64, Int64}()
+│  - tree_type: binary
+│  - rng: Random.MersenneTwister(123)
+└ , …).
+┌ Warning: The number and/or types of data arguments do not match what the specified model
+│ supports. Suppress this type check by specifying `scitype_check_level=0`.
+│ 
+│ Run `@doc EvoTrees.EvoTreeRegressor` to learn more about your model's requirements.
+│ 
+│ Commonly, but non exclusively, supervised models are constructed using the syntax
+│ `machine(model, X, y)` or `machine(model, X, y, w)` while most other models are
+│ constructed with `machine(model, X)`.  Here `X` are features, `y` a target, and `w`
+│ sample or class weights.
+│ 
+│ In general, data in `machine(model, data...)` is expected to satisfy
+│ 
+│     scitype(data) <: MLJ.fit_data_scitype(model)
+│ 
+│ In the present case:
+│ 
+│ scitype(data) = Tuple{Table{AbstractVector{Continuous}}, AbstractVector{Count}}
+│ 
+│ fit_data_scitype(model) = Union{Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}}, Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}, AbstractVector{<:Union{Continuous, Count}}}}
+└ @ MLJBase ~/.julia/packages/MLJBase/ByFwA/src/machines.jl:230
+┌ Info: Training machine(EvoTrees.EvoTreeRegressor{EvoTrees.MSE}
+│  - nrounds: 200
+│  - lambda: 0.0
+│  - gamma: 0.0
+│  - eta: 0.1
+│  - max_depth: 5
+│  - min_weight: 1.0
+│  - rowsample: 1.0
+│  - colsample: 1.0
+│  - nbins: 64
+│  - alpha: 0.5
+│  - monotone_constraints: Dict{Int64, Int64}()
+│  - tree_type: binary
+│  - rng: Random.MersenneTwister(123)
+└ , …).
+┌ Warning: The number and/or types of data arguments do not match what the specified model
+│ supports. Suppress this type check by specifying `scitype_check_level=0`.
+│ 
+│ Run `@doc EvoTrees.EvoTreeRegressor` to learn more about your model's requirements.
+│ 
+│ Commonly, but non exclusively, supervised models are constructed using the syntax
+│ `machine(model, X, y)` or `machine(model, X, y, w)` while most other models are
+│ constructed with `machine(model, X)`.  Here `X` are features, `y` a target, and `w`
+│ sample or class weights.
+│ 
+│ In general, data in `machine(model, data...)` is expected to satisfy
+│ 
+│     scitype(data) <: MLJ.fit_data_scitype(model)
+│ 
+│ In the present case:
+│ 
+│ scitype(data) = Tuple{Table{AbstractVector{Continuous}}, AbstractVector{Count}}
+│ 
+│ fit_data_scitype(model) = Union{Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}}, Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}, AbstractVector{<:Union{Continuous, Count}}}}
+└ @ MLJBase ~/.julia/packages/MLJBase/ByFwA/src/machines.jl:230
+┌ Info: Training machine(EvoTrees.EvoTreeRegressor{EvoTrees.MSE}
+│  - nrounds: 200
+│  - lambda: 0.0
+│  - gamma: 0.0
+│  - eta: 0.1
+│  - max_depth: 5
+│  - min_weight: 1.0
+│  - rowsample: 1.0
+│  - colsample: 1.0
+│  - nbins: 64
+│  - alpha: 0.5
+│  - monotone_constraints: Dict{Int64, Int64}()
+│  - tree_type: binary
+│  - rng: Random.MersenneTwister(123)
+└ , …).
+┌ Warning: The number and/or types of data arguments do not match what the specified model
+│ supports. Suppress this type check by specifying `scitype_check_level=0`.
+│ 
+│ Run `@doc EvoTrees.EvoTreeRegressor` to learn more about your model's requirements.
+│ 
+│ Commonly, but non exclusively, supervised models are constructed using the syntax
+│ `machine(model, X, y)` or `machine(model, X, y, w)` while most other models are
+│ constructed with `machine(model, X)`.  Here `X` are features, `y` a target, and `w`
+│ sample or class weights.
+│ 
+│ In general, data in `machine(model, data...)` is expected to satisfy
+│ 
+│     scitype(data) <: MLJ.fit_data_scitype(model)
+│ 
+│ In the present case:
+│ 
+│ scitype(data) = Tuple{Table{AbstractVector{Continuous}}, AbstractVector{Count}}
+│ 
+│ fit_data_scitype(model) = Union{Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}}, Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}, AbstractVector{<:Union{Continuous, Count}}}}
+└ @ MLJBase ~/.julia/packages/MLJBase/ByFwA/src/machines.jl:230
+┌ Info: Training machine(EvoTrees.EvoTreeRegressor{EvoTrees.MSE}
+│  - nrounds: 200
+│  - lambda: 0.0
+│  - gamma: 0.0
+│  - eta: 0.1
+│  - max_depth: 5
+│  - min_weight: 1.0
+│  - rowsample: 1.0
+│  - colsample: 1.0
+│  - nbins: 64
+│  - alpha: 0.5
+│  - monotone_constraints: Dict{Int64, Int64}()
+│  - tree_type: binary
+│  - rng: Random.MersenneTwister(123)
+└ , …).
+┌ Warning: The number and/or types of data arguments do not match what the specified model
+│ supports. Suppress this type check by specifying `scitype_check_level=0`.
+│ 
+│ Run `@doc EvoTrees.EvoTreeRegressor` to learn more about your model's requirements.
+│ 
+│ Commonly, but non exclusively, supervised models are constructed using the syntax
+│ `machine(model, X, y)` or `machine(model, X, y, w)` while most other models are
+│ constructed with `machine(model, X)`.  Here `X` are features, `y` a target, and `w`
+│ sample or class weights.
+│ 
+│ In general, data in `machine(model, data...)` is expected to satisfy
+│ 
+│     scitype(data) <: MLJ.fit_data_scitype(model)
+│ 
+│ In the present case:
+│ 
+│ scitype(data) = Tuple{Table{AbstractVector{Continuous}}, AbstractVector{Count}}
+│ 
+│ fit_data_scitype(model) = Union{Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}}, Tuple{Union{Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}, AbstractMatrix{Continuous}}, AbstractVector{<:Continuous}, AbstractVector{<:Union{Continuous, Count}}}}
+└ @ MLJBase ~/.julia/packages/MLJBase/ByFwA/src/machines.jl:230
+┌ Info: Training machine(EvoTrees.EvoTreeRegressor{EvoTrees.MSE}
+│  - nrounds: 200
+│  - lambda: 0.0
+│  - gamma: 0.0
+│  - eta: 0.1
+│  - max_depth: 5
+│  - min_weight: 1.0
+│  - rowsample: 1.0
+│  - colsample: 1.0
+│  - nbins: 64
+│  - alpha: 0.5
+│  - monotone_constraints: Dict{Int64, Int64}()
+│  - tree_type: binary
+│  - rng: Random.MersenneTwister(123)
+└ , …).
+┌ Warning: Forcibly interrupting busy workers
+│   exception = rmprocs: pids [6, 7, 8, 9] not terminated after 5.0 seconds.
+└ @ Distributed ~/.julia/juliaup/julia-1.9.3+0.x64.linux.gnu/share/julia/stdlib/v1.9/Distributed/src/cluster.jl:1253
+┌ Warning: rmprocs: process 1 not removed
+└ @ Distributed ~/.julia/juliaup/julia-1.9.3+0.x64.linux.gnu/share/julia/stdlib/v1.9/Distributed/src/cluster.jl:1049
